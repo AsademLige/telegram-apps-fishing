@@ -1,100 +1,3105 @@
 <!DOCTYPE html>
 <html lang="ru">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Telegram Web App Demo</title>
-    <!-- Правильный скрипт Telegram Web App -->
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <title>РЫБАЛКА</title>
+    <script>
+        window.FISHING_DEBUG_BOOT = new URLSearchParams(window.location.search).get('debug') === '1';
+        if (!window.FISHING_DEBUG_BOOT) document.write('<script src="https://telegram.org/js/telegram-web-app.js"><\/script>');
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Handjet:wght,ELSH@100..900,2&family=Press+Start+2P&display=swap"
+        rel="stylesheet">
     <style>
-        /* Используем нативные цвета Telegram для адаптации под тему пользователя */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        html,
         body {
-            background-color: var(--tg-theme-bg-color, #ffffff);
-            color: var(--tg-theme-text-color, #000000);
-            font-family: sans-serif;
+            width: 100%;
+            height: 100%;
+            height: 100dvh;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            overscroll-behavior: none;
+            background: #10251d;
+            color: #f3e7bd;
+            font-family: "Press Start 2P", system-ui;
+            touch-action: none;
+            user-select: none;
+            position: fixed;
+            inset: 0;
+        }
+
+        .player-header {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px 20px;
+            font-size: 10px;
+            letter-spacing: 1.5px;
+            color: #7e879f;
+            text-transform: uppercase;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        .player-header .ph-energy.zero {
+            color: #e95732;
+            text-shadow: 0 0 6px rgba(233, 87, 50, 0.4);
+            animation: energyPulse 1.2s ease-in-out infinite;
+        }
+
+        @keyframes energyPulse {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.65;
+            }
+        }
+
+        .player-header .ph-energy.zero::before {
+            color: #e95732;
+        }
+
+        .energy-warning {
+            position: absolute;
+            top: calc(100% + 4px);
+            right: 0;
+            background: #17221c;
+            border: 2px solid #e95732;
+            color: #e95732;
+            font-size: 7px;
+            letter-spacing: 1px;
+            padding: 4px 8px;
+            box-shadow: 2px 2px 0 #07120d;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s;
+            white-space: nowrap;
+            z-index: 20;
+        }
+
+        .ph-energy.zero:hover .energy-warning {
+            opacity: 1;
+        }
+
+        .player-header .ph-name {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: #9eaf86;
+        }
+
+        .player-header .ph-name::before {
+            content: '▸';
+            color: #63b85b;
+            font-size: 8px;
+        }
+
+        .player-header .ph-energy {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: #d6c997;
+        }
+
+        .player-header .ph-energy::before {
+            content: '⚡';
+            font-size: 10px;
+        }
+
+        .pioneer-footer {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            text-align: center;
+            padding: 6px 8px 4px;
+            font-size: 9px;
+            letter-spacing: 2px;
+            color: #f3e7bd;
+            text-transform: uppercase;
+            pointer-events: none;
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .pioneer-footer::before,
+        .pioneer-footer::after {
+            content: '☭';
+            font-size: 24px;
+            color: #f3e7bd;
+        }
+
+        @media (max-width: 360px) {
+            .pioneer-footer {
+                font-size: 8px;
+                letter-spacing: 1.5px;
+                padding: 10px 12px 14px;
+                gap: 6px;
+            }
+
+            .pioneer-footer::before,
+            .pioneer-footer::after {
+                font-size: 12px;
+            }
+        }
+
+        @media (max-width: 360px) {
+            .player-header {
+                padding: 12px 16px;
+                font-size: 9px;
+            }
+
+            .pioneer-footer {
+                font-size: 8px;
+                letter-spacing: 1.5px;
+                padding: 10px 12px 14px;
+            }
+        }
+
+        #game {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            overflow: hidden;
+            background: #10251d;
+            background-image: radial-gradient(#31533f 1px, transparent 1px);
+            background-size: 5px 5px;
+        }
+
+        #status {
+            height: 24dvh;
+            min-height: 145px;
+            padding: 16px 18px 8px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+            z-index: 10;
+        }
+
+        #input-zone {
+            height: 76dvh;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            touch-action: none;
+        }
+
+        #enemy-section {
+            display: flex;
+            flex-direction: column;
+            gap: 7px;
+        }
+
+        #enemy-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        #enemy-label {
+            font-size: 12px;
+            font-weight: 800;
+            letter-spacing: 3px;
+            color: #f3e7bd;
+            text-transform: uppercase;
+        }
+
+        #enemy-core {
+            font-size: 10px;
+            color: #e95732;
+            letter-spacing: 2px;
+            font-weight: 700;
+        }
+
+        #enemy-hp-bar {
+            height: 10px;
+            background: #17221c;
+            border-radius: 0;
+            overflow: hidden;
+            border: 2px solid #f3e7bd;
+            box-shadow: 3px 3px 0 #07120d;
+        }
+
+        #enemy-hp-fill {
+            height: 100%;
+            width: 100%;
+            background: #e95732;
+            transition: width .22s steps(8, end);
+        }
+
+        #combo {
+            font-size: 13px;
+            letter-spacing: 3px;
+            color: #d6c997;
+            min-height: 18px;
+            text-align: center;
+            font-weight: 800;
+            transition: transform 0.1s ease-out;
+        }
+
+        #combo.pulse {
+            animation: comboPulse var(--pulse-duration, 0.4s) ease-out;
+        }
+
+        @keyframes comboPulse {
+            0% {
+                transform: scale(1);
+            }
+
+            20% {
+                transform: scale(var(--pulse-scale, 1.2)) rotate(var(--pulse-rotate, -3deg));
+            }
+
+            40% {
+                transform: scale(var(--pulse-mid-scale, 1.15)) rotate(var(--pulse-rotate-mid, 2deg));
+            }
+
+            60% {
+                transform: scale(var(--pulse-mid-scale-2, 1.1)) rotate(var(--pulse-rotate-2, -1deg));
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        #combo b {
+            color: #63b85b;
+            display: inline-block;
+            transition: transform 0.15s ease-out;
+        }
+
+        #combo.pulse b {
+            animation: comboValuePulse var(--pulse-duration, 0.4s) ease-out;
+        }
+
+        @keyframes comboValuePulse {
+            0% {
+                transform: scale(1);
+            }
+
+            30% {
+                transform: scale(var(--pulse-value-scale, 1.4));
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        #hearts-section {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            margin: 10px auto;
+        }
+
+        .heart {
+            width: 50px;
+            height: 50px;
+            padding: 4px;
+            box-sizing: content-box;
+            transition: transform .2s, opacity .2s;
+            shape-rendering: crispEdges;
+            filter:
+                drop-shadow(3px 0 0 #f3e7bd) drop-shadow(-3px 0 0 #f3e7bd) drop-shadow(0 3px 0 #f3e7bd) drop-shadow(0 -3px 0 #f3e7bd);
+        }
+
+        .heart svg {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        .heart.lost {
+            opacity: .15;
+            filter: grayscale(1);
+        }
+
+        .heart.breaking {
+            animation: heartBreak .35s ease-out;
+        }
+
+        .heart.last-heart:not(.lost) {
+            animation: heartShake 0.45s infinite;
+            filter:
+                drop-shadow(3px 0 0 #e95732) drop-shadow(-3px 0 0 #e95732) drop-shadow(0 3px 0 #e95732) drop-shadow(0 -3px 0 #e95732);
+        }
+
+        @keyframes heartShake {
+
+            0%,
+            100% {
+                transform: translate(0, 0) rotate(0deg);
+            }
+
+            10% {
+                transform: translate(-1.5px, -1px) rotate(-2deg);
+            }
+
+            20% {
+                transform: translate(1.5px, -1.5px) rotate(2deg);
+            }
+
+            30% {
+                transform: translate(-1px, 1.5px) rotate(-1deg);
+            }
+
+            40% {
+                transform: translate(1.5px, 1px) rotate(2deg);
+            }
+
+            50% {
+                transform: translate(-1.5px, -1.5px) rotate(-2deg);
+            }
+
+            60% {
+                transform: translate(1px, 0) rotate(1deg);
+            }
+
+            70% {
+                transform: translate(-1.5px, 1.5px) rotate(-2deg);
+            }
+
+            80% {
+                transform: translate(1.5px, -1px) rotate(2deg);
+            }
+
+            90% {
+                transform: translate(0, 1.5px) rotate(-1deg);
+            }
+        }
+
+        @keyframes heartBreak {
+            0% {
+                transform: scale(1);
+            }
+
+            40% {
+                transform: scale(1.5) rotate(-8deg);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        #slider-monster {
+            position: absolute;
+            left: 50%;
+            top: 5%;
+            width: min(58vw, 440px);
+            height: min(58vw, 440px);
+            transform: translate(-50%, -50%);
+            object-fit: contain;
+            pointer-events: none;
+            opacity: 0.7;
+            z-index: 1;
+        }
+
+        #slider-monster.hit {
+            animation: monsterHit .24s ease-out;
+        }
+
+        @keyframes monsterHit {
+            0% {
+                transform: translate(-50%, -50%) scale(1);
+                filter: brightness(1);
+            }
+
+            25% {
+                transform: translate(-50%, -50%) scale(.96) translateX(-5px);
+                filter: brightness(1.7);
+            }
+
+            50% {
+                transform: translate(-50%, -50%) scale(1.03) translateX(5px);
+                filter: brightness(1.25);
+            }
+
+            100% {
+                transform: translate(-50%, -50%) scale(1);
+            }
+        }
+
+        #slider-monster.death {
+            animation:
+                monsterShake 0.09s linear 14,
+                monsterFadeOut 1.25s ease-out forwards;
+            z-index: 50;
+        }
+
+        @keyframes monsterShake {
+
+            0%,
+            100% {
+                transform: translate(-50%, -50%);
+            }
+
+            20% {
+                transform: translate(calc(-50% - 4px), calc(-50% - 3px));
+            }
+
+            40% {
+                transform: translate(calc(-50% + 4px), calc(-50% + 2px));
+            }
+
+            60% {
+                transform: translate(calc(-50% - 3px), calc(-50% + 4px));
+            }
+
+            80% {
+                transform: translate(calc(-50% + 3px), calc(-50% - 3px));
+            }
+        }
+
+        @keyframes monsterFadeOut {
+            0% {
+                opacity: 0.7;
+            }
+
+            40% {
+                opacity: 0.65;
+            }
+
+            70% {
+                opacity: 0.4;
+            }
+
+            90% {
+                opacity: 0.15;
+            }
+
+            100% {
+                opacity: 0;
+            }
+        }
+
+        #slider-game {
+            width: min(92vw, 760px);
+            display: none;
+            flex-direction: column;
+            gap: 14px;
+            padding: 0 6px;
+            position: relative;
+            z-index: 2;
+        }
+
+        #slider-game.visible {
+            display: flex;
+        }
+
+        #slider-track {
+            position: relative;
+            width: 100%;
+            height: 54px;
+            background: #17221c;
+            border: 3px solid #f3e7bd;
+            box-shadow: 5px 5px 0 #07120d;
+            touch-action: none;
+            cursor: ew-resize;
+            overflow: hidden;
+        }
+
+        .slider-zone {
+            position: absolute;
+            top: 8px;
+            height: 32px;
+            border: 2px solid rgba(243, 231, 189, .9);
+            background: linear-gradient(90deg, #d7a52d 0%, #e6c448 28%, #98c94e 43%, #54b957 50%, #98c94e 57%, #e6c448 72%, #d7a52d 100%);
+            transition: opacity .12s, filter .12s;
+            pointer-events: none;
+
+            animation: zoneAppear 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+            animation-delay: calc(var(--zone-index, 0) * 0.07s);
+            transform-origin: center center;
+        }
+
+        .slider-zone.hit {
+            opacity: 0 !important;
+            filter: grayscale(1) !important;
+            animation: none;
+        }
+
+        .slider-zone.critical {
+            background: #ffb000;
+            animation: zoneAppearCritical 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+            animation-delay: calc(var(--zone-index, 0) * 0.07s);
+        }
+
+        .slider-zone .zone-green {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 40%;
+            width: 20%;
+            background: #54b957;
+            pointer-events: none;
+        }
+
+        @keyframes zoneAppear {
+            0% {
+                transform: scaleY(0.15) scaleX(0.6);
+                opacity: 0;
+                filter: brightness(2.5);
+            }
+
+            35% {
+                opacity: 1;
+                filter: brightness(1.8);
+            }
+
+            70% {
+                transform: scaleY(1.12) scaleX(1.02);
+                filter: brightness(1.15);
+            }
+
+            100% {
+                transform: scale(1);
+                opacity: 1;
+                filter: brightness(1);
+            }
+        }
+
+        @keyframes zoneAppearCritical {
+            0% {
+                transform: scaleY(0.15) scaleX(0.4);
+                opacity: 0;
+                filter: brightness(3) drop-shadow(0 0 12px #ffb000);
+            }
+
+            30% {
+                opacity: 1;
+                filter: brightness(2.2) drop-shadow(0 0 18px #ffb000);
+            }
+
+            60% {
+                transform: scaleY(1.2) scaleX(1.05);
+                filter: brightness(1.5) drop-shadow(0 0 10px #ffb000);
+            }
+
+            100% {
+                transform: scale(1);
+                opacity: 1;
+                filter: brightness(1) drop-shadow(0 0 4px #ffb000);
+            }
+        }
+
+        #slider-knob {
+            position: absolute;
+            top: 50%;
+            width: 15px;
+            height: 38px;
+            transform: translate(-50%, -50%);
+            background: #f3e7bd;
+            border: 3px solid #10251d;
+            box-shadow: 3px 3px 0 #07120d;
+            z-index: 10;
+            pointer-events: none;
+        }
+
+        #slider-knob::after {
+            content: "";
+            position: absolute;
+            left: 2px;
+            right: 2px;
+            top: 7px;
+            bottom: 7px;
+            background: #e95732;
+        }
+
+        #slider-knob.bounce {
+            animation: knobBounce .25s ease-out;
+        }
+
+        @keyframes knobBounce {
+            0% {
+                transform: translate(-50%, -50%) scale(1);
+                filter: brightness(1);
+            }
+
+            30% {
+                transform: translate(-50%, -50%) scale(1.35, 0.75);
+                filter: brightness(2.2);
+            }
+
+            55% {
+                transform: translate(-50%, -50%) scale(0.85, 1.2);
+                filter: brightness(1.4);
+            }
+
+            80% {
+                transform: translate(-50%, -50%) scale(1.08, 0.92);
+                filter: brightness(1.1);
+            }
+
+            100% {
+                transform: translate(-50%, -50%) scale(1);
+                filter: brightness(1);
+            }
+        }
+
+        #slider-timer {
+            position: relative;
+            height: 12px;
+            border: 2px solid #f3e7bd;
+            background: #17221c;
+            box-shadow: 3px 3px 0 #07120d;
+            overflow: hidden;
+        }
+
+        #slider-timer-fill {
+            height: 100%;
+            width: 100%;
+            transform-origin: left center;
+            background: #63b85b;
+            transition: width .05s linear, background .12s;
+        }
+
+        #slider-timer-fill.warn {
+            background: #e95732;
+        }
+
+        #notification {
+            position: absolute;
+            top: 30%;
+            left: 50%;
+            margin-left: var(--notif-x, 0px);
+            margin-top: var(--notif-y, 0px);
+            transform: translate(-50%, -50%);
+            font-size: var(--notif-size, 29px);
+            font-weight: 900;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            opacity: 0;
+            pointer-events: none;
+            text-shadow: 3px 3px 0 #07120d;
+            white-space: nowrap;
+            z-index: 30;
+        }
+
+        #notification.show {
+            animation: notifyPulse .72s ease-out;
+        }
+
+        @keyframes notifyPulse {
+            0% {
+                opacity: 0;
+                transform: translate(-50%, -50%) scale(.55);
+            }
+
+            18% {
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(1.12);
+            }
+
+            75% {
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(1);
+            }
+
+            100% {
+                opacity: 0;
+                transform: translate(-50%, -50%) scale(.92);
+            }
+        }
+
+        #flash-overlay {
+            position: fixed;
+            inset: 0;
+            background: #63b85b;
+            opacity: 0;
+            pointer-events: none;
+            z-index: 100;
+        }
+
+        #flash-overlay.flash {
+            animation: flashEffect .25s ease-out;
+        }
+
+        @keyframes flashEffect {
+            0% {
+                opacity: .42;
+            }
+
+            100% {
+                opacity: 0;
+            }
+        }
+
+        #game.shake {
+            animation: shakeEffect .24s ease-out;
+        }
+
+        @keyframes shakeEffect {
+
+            0%,
+            100% {
+                transform: translateX(0);
+            }
+
+            25% {
+                transform: translateX(-7px);
+            }
+
+            50% {
+                transform: translateX(7px);
+            }
+
+            75% {
+                transform: translateX(-4px);
+            }
+        }
+
+        .overlay {
+            position: fixed;
+            inset: 0;
+            background: #10251d;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            height: 100vh;
-            margin: 0;
-            padding: 20px;
-            box-sizing: border-box;
+            z-index: 200;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity .25s;
         }
-        .card {
-            background-color: var(--tg-theme-secondary-bg-color, #f0f0f0);
-            padding: 20px;
-            border-radius: 12px;
-            width: 100%;
+
+        .overlay.show {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .overlay h1 {
+            font-size: 42px;
+            letter-spacing: 7px;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+        }
+
+        #game-over h1 {
+            color: #e95732;
+            text-shadow: 4px 4px 0 #07120d;
+        }
+
+        #no-battle h1 {
+            font-size: 28px;
+            letter-spacing: 5px;
             text-align: center;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            color: #e95732;
+            text-shadow: 3px 3px 0 #07120d;
+            margin-bottom: 16px;
         }
-        button {
-            margin-top: 20px;
-            padding: 12px 24px;
-            background-color: var(--tg-theme-button-color, #3390ec);
-            color: var(--tg-theme-button-text-color, #ffffff);
-            border: none;
-            border-radius: 8px;
-            font-size: 16px;
-            cursor: pointer;
+
+        .no-battle-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            align-items: center;
+            margin-top: 16px;
+        }
+
+        .no-battle-actions button {
+            min-width: 220px;
+        }
+
+        #victory h1 {
+            color: #63b85b;
+            text-shadow: 4px 4px 0 #07120d;
+            font-size: 28px;
+            letter-spacing: 5px;
+            margin-bottom: 24px;
+            text-align: center;
+            transform-origin: center center;
+        }
+
+        #victory h1.celebrate {
+            animation: victoryCelebrate 1.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        @keyframes victoryCelebrate {
+            0% {
+                transform: scale(0.3) rotate(-15deg);
+                opacity: 0;
+            }
+
+            25% {
+                transform: scale(1.35) rotate(4deg);
+                opacity: 1;
+            }
+
+            40% {
+                transform: scale(0.95) rotate(-3deg);
+            }
+
+            55% {
+                transform: scale(1.15) rotate(2deg);
+            }
+
+            70% {
+                transform: scale(0.98) rotate(-1deg);
+            }
+
+            85% {
+                transform: scale(1.05) rotate(0.5deg);
+            }
+
+            100% {
+                transform: scale(1) rotate(0deg);
+                opacity: 1;
+            }
+        }
+
+        .reward-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 6px;
+        }
+
+        .reward-item {
+            display: flex;
+            align-items: baseline;
+            gap: 8px;
+            color: #f3e7bd;
+            font-size: 11px;
+            letter-spacing: 0.5px;
+            line-height: 1.5;
+            min-height: 1.5em;
+            transition: opacity 0.3s, filter 0.3s;
+        }
+
+        .reward-item.main {
+            color: #e7d79e;
+            font-size: 13px;
+            font-weight: 900;
+            text-shadow: 2px 2px 0 #07120d;
+        }
+
+        .reward-item.bonus {
+            color: #9eaf86;
+            font-size: 10px;
+        }
+
+        .reward-item .coin-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 20px;
+            height: 1em;
+            font-size: 0.95em;
+            flex-shrink: 0;
+            text-align: center;
+        }
+
+        .reward-item.main .coin-icon {
+            font-size: 1.1em;
+        }
+
+        .reward-item .reward-text {
+            flex: 1;
+            min-width: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .reward-item.locked {
+            color: #5a6b55 !important;
+            opacity: 0.55;
+            filter: grayscale(0.7);
+            text-shadow: none !important;
+        }
+
+        .reward-item.locked .coin-icon {
+            filter: grayscale(1);
+            opacity: 0.5;
+        }
+
+        .reward-item.locked .reward-text {
+            font-style: italic;
+            letter-spacing: 0.3px;
+        }
+
+        .reward-item.reward-appear {
+            animation: rewardSlideIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        }
+
+        .reward-item.main.reward-appear {
+            animation: rewardSlideInMain 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        }
+
+        .reward-item.reward-appear .coin-icon {
+            animation: coinSpin 0.6s ease-out;
+        }
+
+        @keyframes rewardSlideIn {
+            0% {
+                opacity: 0;
+                transform: translateX(-20px);
+                filter: brightness(0.5);
+            }
+
+            50% {
+                opacity: 1;
+                transform: translateX(4px);
+                filter: brightness(1.3);
+            }
+
+            100% {
+                opacity: 1;
+                transform: translateX(0);
+                filter: brightness(1);
+            }
+        }
+
+        @keyframes rewardSlideInMain {
+            0% {
+                opacity: 0;
+                transform: translateX(-24px) scale(0.9);
+                filter: brightness(0.5);
+            }
+
+            40% {
+                opacity: 1;
+                transform: translateX(4px) scale(1.04);
+                filter: brightness(1.4);
+            }
+
+            70% {
+                transform: translateX(-2px) scale(0.99);
+                filter: brightness(1.1);
+            }
+
+            100% {
+                opacity: 1;
+                transform: translateX(0) scale(1);
+                filter: brightness(1);
+            }
+        }
+
+        @keyframes coinSpin {
+            0% {
+                transform: rotateY(0deg) scale(1);
+            }
+
+            30% {
+                transform: rotateY(180deg) scale(1.25);
+            }
+
+            60% {
+                transform: rotateY(360deg) scale(1.1);
+            }
+
+            100% {
+                transform: rotateY(540deg) scale(1);
+            }
+        }
+
+        .reward-item.empty {
+            color: #7e879f;
+            font-size: 10px;
+            font-style: italic;
+        }
+
+        .result {
+            color: #7e879f;
+            font-size: 12px;
+            letter-spacing: 2px;
+            line-height: 2;
+            text-align: center;
+            margin-bottom: 28px;
+        }
+
+        .overlay button {
+            padding: 15px 34px;
+            font-size: 13px;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            background: #e7d79e;
+            border: 3px solid #f3e7bd;
+            color: #10251d;
+            border-radius: 0;
+            box-shadow: 5px 5px 0 #07120d;
+            font-weight: 900;
+        }
+
+        .game-over-actions {
+            display: grid;
+            gap: 10px;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .game-over-actions button {
+            min-width: 150px;
+        }
+
+        #game.battle-awaiting {
+            visibility: hidden;
+        }
+
+        #game.battle-ready {
+            visibility: visible;
+        }
+
+        #battle-loading-screen {
+            position: fixed;
+            inset: 0;
+            z-index: 99999;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: #10251d;
+            color: #f3e7bd;
+            text-align: center;
+        }
+
+        .loading-header {
+            margin: 0 auto 30px auto;
+            text-align: justify;
+        }
+
+        .battle-loading-title {
+            display: block;
             width: 100%;
+            font-size: 36px;
+            line-height: 1;
+            font-weight: 900;
+            text-transform: uppercase;
+            color: #f3e7bd;
+            text-shadow: 4px 4px 0 #07120d;
+            text-align: justify;
+            text-align-last: justify;
         }
-        button:active {
-            opacity: 0.8;
+
+        .battle-loading-subtitle {
+            display: block;
+            width: 100%;
+            margin-top: 4px;
+            margin-bottom: 16px;
+            font-size: 14px;
+            line-height: 1;
+            font-weight: 700;
+            text-transform: lowercase;
+            color: #9eaf86;
+            text-shadow: 2px 2px 0 #07120d;
+            text-align-last: center;
+            letter-spacing: 13.7px;
+        }
+
+        .battle-loading-progress {
+            position: relative;
+            width: min(78vw, 520px);
+            height: 56px;
+            background: #17221c;
+            border: 3px solid #f3e7bd;
+            box-shadow: 5px 5px 0 #07120d;
+            overflow: hidden;
+            margin: 0 auto;
+        }
+
+        .battle-loading-progress-fill {
+            position: absolute;
+            inset: 0 auto 0 0;
+            width: 0%;
+            background: #e7d79e;
+        }
+
+        .battle-loading-progress-text {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: 900;
+            letter-spacing: 10px;
+            pointer-events: none;
+            background: linear-gradient(90deg,
+                    #10251d 0%,
+                    #10251d var(--progress, 0%),
+                    #e7d79e var(--progress, 0%),
+                    #e7d79e 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-shadow: none;
+        }
+
+        @media (max-width: 360px) {
+            .loading-header {
+                width: 85vw;
+            }
+
+            .battle-loading-title {
+                font-size: 34px;
+            }
+
+            .battle-loading-subtitle {
+                font-size: 14px;
+            }
+
+            .battle-loading-progress {
+                height: 50px;
+            }
+
+            .battle-loading-progress-text {
+                font-size: 18px;
+                letter-spacing: 4px;
+            }
+        }
+
+        #battle-loading-screen.hidden {
+            display: none;
+        }
+
+        @media (max-width: 360px) {
+            .loading-header {
+                width: 82vw;
+            }
+
+            .battle-loading-title {
+                font-size: 30px;
+            }
+
+            .battle-loading-subtitle {
+                font-size: 12px;
+            }
+
+            .battle-loading-progress {
+                width: 82vw;
+                height: 44px;
+            }
+
+            .battle-loading-progress-text {
+                font-size: 14px;
+                letter-spacing: 3px;
+            }
+        }
+
+        .monster-encounter {
+            position: relative;
+            color: #f3e7bd;
+            font-size: 11px;
+            letter-spacing: 1px;
+            line-height: 1.6;
+            text-align: left;
+            margin: 10px auto 0 auto;
+            padding: 28px 20px 20px 24px;
+            border: 2px solid #31533f;
+            background: #0d1f18;
+            box-shadow: 6px 6px 0 #07120d;
+            max-width: min(85vw, 360px);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+
+            clip-path: polygon(34px 0, 100% 0,
+                    100% 100%, 0 100%,
+                    0 34px);
+        }
+
+        .dossier-pin {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 10px;
+            height: 10px;
+            margin-top: 12px;
+            background: #a83828;
+            box-shadow:
+                2px 2px 0 #07120d,
+                inset -2px -2px 0 #7a2818,
+                inset 2px 2px 0 #c84838;
+            z-index: 1;
+        }
+
+        .dossier-wrapper {
+            position: relative;
+            max-width: min(85vw, 360px);
+            margin: 10px auto 0 auto;
+        }
+
+        .encounter-content {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .dossier-row {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .dossier-label {
+            color: #e95732;
+            font-size: 9px;
+            font-weight: 900;
+            letter-spacing: 2px;
+        }
+
+        .m-name {
+            color: #f3e7bd;
+            font-size: 16px;
+            font-weight: 900;
+            letter-spacing: 1px;
+            text-shadow: 2px 2px 0 #07120d;
+        }
+
+        .m-desc {
+            color: #9eaf86;
+            font-size: 11px;
+            letter-spacing: 0.5px;
+            line-height: 1.5;
+            text-transform: none;
+        }
+
+        .encounter-actions {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 24px;
+            padding-top: 16px;
+            border-top: 1px dashed #31533f;
+        }
+
+        .encounter-actions #start-battle-btn {
+            width: 100%;
+            padding: 14px 24px;
+            font-size: 12px;
+            letter-spacing: 2px;
+        }
+
+        @media (max-width: 360px) {
+            .monster-encounter {
+                padding: 24px 16px 16px 20px;
+            }
+
+            .m-name {
+                font-size: 14px;
+            }
+
+            .m-desc {
+                font-size: 10px;
+            }
+
+            .encounter-actions #start-battle-btn {
+                padding: 10px 20px;
+                font-size: 11px;
+            }
+        }
+
+        #retry-btn,
+        #exit-btn,
+        #no-battle-exit-btn {
+            background: #10251d;
+            color: #e7d79e;
+            border: 0;
+            box-shadow: none;
+            padding: 8px 34px;
+        }
+
+        #exit-btn {
+            margin-top: 8px;
+        }
+
+        .overlay button,
+        #retry-btn {
+            position: relative;
+            cursor: pointer;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+
+            transition:
+                background-color .12s steps(2, end),
+                color .12s steps(2, end),
+                border-color .12s steps(2, end),
+                transform .08s steps(2, end),
+                box-shadow .08s steps(2, end),
+                filter .12s steps(2, end);
+        }
+
+        @media (hover: hover) and (pointer: fine) {
+            .overlay button:not(:disabled):hover {
+                background: #f3e7bd;
+                color: #10251d;
+                border-color: #fff5cf;
+                transform: translate(-2px, -2px);
+                box-shadow: 7px 7px 0 #07120d, 0 0 0 2px rgba(99, 184, 91, .15);
+                filter: brightness(1.04);
+            }
+
+            #retry-btn:not(:disabled):hover {
+                color: #fff5cf;
+                background: #173429;
+                transform: translate(-1px, -1px);
+                box-shadow: 4px 4px 0 #07120d;
+            }
+        }
+
+        .overlay button:not(:disabled):active {
+            transform: translate(3px, 3px);
+            box-shadow: 1px 1px 0 #07120d;
+            background: #d6c997;
+            border-color: #e7d79e;
+            filter: brightness(.94);
+        }
+
+        #retry-btn:not(:disabled):active {
+            transform: translate(2px, 2px);
+            box-shadow: none;
+            background: #0b1b14;
+            color: #f3e7bd;
+        }
+
+        .overlay button:focus-visible {
+            outline: 2px solid #63b85b;
+            outline-offset: 4px;
+        }
+
+        .overlay button:disabled {
+            opacity: .45;
+            cursor: default;
+            filter: grayscale(.5);
+            transform: none;
+            box-shadow: 3px 3px 0 #07120d;
+        }
+
+        @media (hover: none) and (pointer: coarse) {
+            .overlay button:not(:disabled) {
+                transition:
+                    background-color .08s steps(2, end),
+                    transform .08s steps(2, end),
+                    box-shadow .08s steps(2, end),
+                    filter .08s steps(2, end);
+            }
+
+            .overlay button:not(:disabled):active {
+                transform: translate(3px, 3px) scale(.98);
+                box-shadow: 1px 1px 0 #07120d;
+                background: #d6c997;
+                filter: brightness(.92);
+            }
+
+            #retry-btn:not(:disabled):active {
+                transform: translate(2px, 2px) scale(.98);
+                box-shadow: none;
+            }
+        }
+
+        #sound-toggle-btn.sound-toggle {
+            position: absolute;
+            padding: 6px 12px;
+            top: 54px;
+            right: 16px;
+            width: 46px;
+            height: 46px;
+            background: #17221c;
+            border: 2px solid #f3e7bd;
+            box-shadow: 3px 3px 0 #07120d;
+            color: #f3e7bd;
+            font-size: 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 20;
+            pointer-events: auto;
+            transition: transform .08s steps(2, end), box-shadow .08s steps(2, end), background .12s;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .sound-toggle.muted {
+            background: #0d1f18;
+            color: #7e879f;
+            border-color: #31533f;
+            box-shadow: 3px 3px 0 #07120d;
+        }
+
+        .sound-toggle:active {
+            transform: translate(2px, 2px);
+            box-shadow: 1px 1px 0 #07120d;
+        }
+
+        .sound-toggle .sound-icon {
+            display: block;
+            line-height: 1;
+            pointer-events: none;
+        }
+
+        .typewriter-cursor {
+            display: inline-block;
+            width: 2px;
+            height: 1em;
+            background: #63b85b;
+            margin-left: 2px;
+            animation: cursorBlink 0.8s infinite;
+            vertical-align: text-bottom;
+        }
+
+        @keyframes cursorBlink {
+
+            0%,
+            49% {
+                opacity: 1;
+            }
+
+            50%,
+            100% {
+                opacity: 0;
+            }
+        }
+
+        .m-desc {
+            min-height: 48px;
+        }
+
+        .monster-encounter {
+            min-height: 180px;
+        }
+
+        .m-name {
+            min-height: 24px;
+        }
+
+        #game.fishing-mode {
+            visibility: visible;
+            display: flex;
+            flex-direction: column;
+        }
+
+        #status {
+            flex: 0 0 22dvh;
+            height: 22dvh;
+            min-height: 126px;
+            padding: 52px 18px 10px;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        #fish-title {
+            color: #f3e7bd;
+            font-size: 18px;
+            text-align: center;
+            letter-spacing: 3px;
+            line-height: 1;
+            text-shadow: 3px 3px 0 #07120d;
+            display: block;
+            margin: 0;
+            padding: 0;
+        }
+
+        #fish-status {
+            min-height: 28px;
+            color: #9eaf86;
+            text-align: center;
+            font-size: 9px;
+            line-height: 1.8;
+            letter-spacing: 1.5px;
+        }
+
+        #input-zone {
+            flex: 1 1 auto;
+            height: auto;
+            min-height: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            gap: 13px;
+            padding: 0 14px 48px;
+        }
+
+        .sky {
+            position: absolute;
+            top: 3%;
+            left: 0;
+            right: 0;
+            height: 28%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .cloud {
+            position: absolute;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 3px;
+        }
+
+        .cloud-line {
+            height: 1px;
+            background: #7e879f;
+            box-shadow: 1px 1px 0 #07120d;
+        }
+
+        .cloud-line.cl-short {
+            width: 46px;
+        }
+
+        .cloud-line.cl-long {
+            width: 80px;
+        }
+
+        .cloud-1 {
+            top: 12%;
+            left: 8%;
+            animation: cloudDrift1 28s ease-in-out infinite alternate;
+        }
+
+        .cloud-1 .cl-long {
+            width: 78px;
+        }
+
+        .cloud-1 .cl-short {
+            width: 34px;
+        }
+
+        .cloud-2 {
+            top: 22%;
+            left: 58%;
+            animation: cloudDrift2 22s ease-in-out infinite alternate;
+        }
+
+        .cloud-3 {
+            top: 6%;
+            left: 68%;
+            animation: cloudDrift3 32s ease-in-out infinite alternate;
+        }
+
+        .cloud-3 .cl-long {
+            width: 82px;
+        }
+
+        .cloud-3 .cl-short {
+            width: 30px;
+        }
+
+        .cloud-4 {
+            top: 32%;
+            left: 22%;
+            animation: cloudDrift4 18s ease-in-out infinite alternate;
+        }
+
+        .cloud-4 .cl-short {
+            width: 22px;
+        }
+
+        .cloud-4 .cl-long {
+            width: 48px;
+        }
+
+        @keyframes cloudDrift1 {
+            0% {
+                transform: translateX(0);
+            }
+
+            100% {
+                transform: translateX(60px);
+            }
+        }
+
+        @keyframes cloudDrift2 {
+            0% {
+                transform: translateX(0);
+            }
+
+            100% {
+                transform: translateX(-45px);
+            }
+        }
+
+        @keyframes cloudDrift3 {
+            0% {
+                transform: translateX(0);
+            }
+
+            100% {
+                transform: translateX(-70px);
+            }
+        }
+
+        @keyframes cloudDrift4 {
+            0% {
+                transform: translateX(0);
+            }
+
+            100% {
+                transform: translateX(50px);
+            }
+        }
+
+        .grass {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 45vh;
+            min-height: 260px;
+            pointer-events: none;
+            z-index: 6;
+        }
+
+        #grass-container svg {
+            display: block;
+            width: 100%;
+            height: 100%;
+            overflow: visible;
+            shape-rendering: crispEdges;
+        }
+
+        .grass-blade-svg,
+        .grass-reed {
+            transform-box: fill-box;
+            transform-origin: center bottom;
+            will-change: transform;
+        }
+
+        .grass-blade-svg {
+            animation: grassSwaySvg var(--dur, 3s) ease-in-out infinite alternate;
+            animation-delay: var(--delay, 0s);
+        }
+
+        .grass-reed {
+            animation: reedSwaySvg var(--dur, 4s) ease-in-out infinite alternate;
+            animation-delay: var(--delay, 0s);
+        }
+
+        @keyframes grassSwaySvg {
+            0% {
+                transform: rotate(calc(var(--lean, 0deg) - 3deg));
+            }
+
+            100% {
+                transform: rotate(calc(var(--lean, 0deg) + 3deg));
+            }
+        }
+
+        @keyframes reedSwaySvg {
+            0% {
+                transform: rotate(calc(var(--lean, 0deg) - 2deg));
+            }
+
+            100% {
+                transform: rotate(calc(var(--lean, 0deg) + 2deg));
+            }
+        }
+
+        .water-scene {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 600px;
+            height: 440px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 5;
+            pointer-events: none;
+            animation: waterFloat 4s ease-in-out infinite;
+        }
+
+        @keyframes waterFloat {
+
+            0%,
+            100% {
+                transform: translate(-50%, -50%) translateY(0px);
+            }
+
+            50% {
+                transform: translate(-50%, -50%) translateY(-6px);
+            }
+        }
+
+        @keyframes waterRipple {
+
+            0%,
+            100% {
+                transform: translateX(0) scaleX(1);
+                opacity: 0.45;
+            }
+
+            25% {
+                transform: translateX(3px) scaleX(1.01);
+                opacity: 0.55;
+            }
+
+            75% {
+                transform: translateX(-3px) scaleX(0.99);
+                opacity: 0.5;
+            }
+        }
+
+        @keyframes bubbleFloat {
+            0% {
+                transform: translateY(0) translateX(0);
+                opacity: 0;
+            }
+
+            20% {
+                opacity: 0.6;
+            }
+
+            80% {
+                opacity: 0.4;
+            }
+
+            100% {
+                transform: translateY(-120px) translateX(20px);
+                opacity: 0;
+            }
+        }
+
+        .water-scene::before {
+            content: "";
+            position: absolute;
+            left: 4%;
+            right: 4%;
+            bottom: 13%;
+            height: 30%;
+            border-top: 3px solid #31533f;
+            border-bottom: 2px solid #31533f;
+            background: repeating-linear-gradient(0deg, transparent 0 10px, rgba(49, 83, 63, .45) 10px 12px);
+            animation: waterRipple 3s ease-in-out infinite;
+        }
+
+        .water-scene::after {
+            content: "";
+            position: absolute;
+            left: 13%;
+            right: 13%;
+            bottom: 0;
+            height: 9%;
+            border-top: 2px solid #31533f;
+            opacity: .6;
+            animation: waterRipple 3.5s ease-in-out infinite 0.5s;
+        }
+
+        .wave {
+            position: absolute;
+            left: -10%;
+            width: 120%;
+            font-family: "Handjet", monospace;
+            font-size: 18px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            color: #4a7a5c;
+            white-space: nowrap;
+            pointer-events: none;
+            text-shadow: 1px 1px 0 #07120d;
+            user-select: none;
+        }
+
+        .wave-1 {
+            top: 68%;
+            opacity: 0.7;
+            animation: waveShift1 5s ease-in-out infinite alternate;
+        }
+
+        .wave-2 {
+            top: 78%;
+            opacity: 0.5;
+            font-size: 14px;
+            animation: waveShift2 7s ease-in-out infinite alternate;
+        }
+
+        .wave-3 {
+            top: 88%;
+            opacity: 0.6;
+            font-size: 16px;
+            animation: waveShift3 6s ease-in-out infinite alternate;
+        }
+
+        @keyframes waveShift1 {
+            0% {
+                transform: translateX(0);
+            }
+
+            100% {
+                transform: translateX(-40px);
+            }
+        }
+
+        @keyframes waveShift2 {
+            0% {
+                transform: translateX(-20px);
+            }
+
+            100% {
+                transform: translateX(20px);
+            }
+        }
+
+        @keyframes waveShift3 {
+            0% {
+                transform: translateX(10px);
+            }
+
+            100% {
+                transform: translateX(-30px);
+            }
+        }
+
+        .rod {
+            position: absolute;
+            top: 120%;
+            left: -1%;
+            width: 5px;
+            height: 137%;
+            background: #9eaf86;
+            border: 1px solid #07120d;
+            transform: rotate(225deg);
+            transform-origin: top center;
+            box-shadow: 2px 2px 0 #07120d;
+        }
+
+        .rod-line {
+            position: absolute;
+            top: 29%;
+            bottom: 7px;
+            left: -8px;
+            width: 1px;
+            background: #d6c997;
+            opacity: 0.9;
+        }
+
+        .rod-reel {
+            position: absolute;
+            top: 27%;
+            left: -30px;
+            width: 24px;
+            height: 24px;
+            background: #17221c;
+            border: 2px solid #f3e7bd;
+            box-shadow: 2px 2px 0 #07120d;
+            transform: rotate(180deg);
+        }
+
+        .rod-reel::after {
+            content: "";
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            width: 4px;
+            height: 4px;
+            margin: -2px 0 0 -2px;
+            background: #e95732;
+        }
+
+        .fishing-line {
+            position: absolute;
+            top: 24%;
+            left: calc(70.5% - 1px);
+            width: 2px;
+            height: 55%;
+            background: #d6c997;
+            transform-origin: top center;
+        }
+
+        .bobber {
+            position: absolute;
+            top: 90%;
+            left: -7px;
+            width: 17px;
+            height: 31px;
+            background: linear-gradient(180deg, #e95732 0 48%, #f3e7bd 49% 100%);
+            border: 2px solid #10251d;
+            box-shadow: 2px 2px 0 #07120d;
+            transition: transform .12s steps(3, end);
+        }
+
+        .water-scene.cast .fishing-line {
+            animation: castLine .65s ease-out;
+        }
+
+        .water-scene.fake-bite .bobber {
+            animation: fakeBite 1.1s ease-in-out;
+        }
+
+        .water-scene.real-bite .bobber {
+            animation: realBite .48s steps(4, end) infinite;
+        }
+
+        @keyframes castLine {
+            0% {
+                transform: rotate(-45deg);
+                height: 4%;
+            }
+
+            100% {
+                transform: rotate(0deg);
+                height: 23%;
+            }
+        }
+
+        @keyframes fakeBite {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            15% {
+                transform: translateY(9px);
+            }
+
+            30% {
+                transform: translateY(-3px);
+            }
+
+            45% {
+                transform: translateY(6px);
+            }
+
+            60% {
+                transform: translateY(-5px);
+            }
+
+            80% {
+                transform: translateY(3px);
+            }
+        }
+
+        @keyframes realBite {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            30% {
+                transform: translateY(12px) rotate(10deg);
+            }
+
+            60% {
+                transform: translateY(-5px) rotate(-6deg);
+            }
+        }
+
+        /* [1] Слайдер: фиксированная позиция в нижнем левом углу, увеличенная высота */
+        #slider-game {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            width: min(30vw, 280px);
+            display: none;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 10px;
+            padding: 0;
+            z-index: 20;
+        }
+
+        #slider-game.visible {
+            display: flex;
+        }
+
+        .slider-playfield {
+            display: flex;
+            flex-direction: row;
+            align-items: stretch;
+            justify-content: flex-start;
+            gap: 14px;
+        }
+
+        /* [1] Увеличенная высота */
+        #slider-track {
+            position: relative;
+            width: 66px;
+            height: min(65dvh, 520px);
+            min-height: 300px;
+            background: #17221c;
+            border: 3px solid #f3e7bd;
+            box-shadow: 5px 5px 0 #07120d;
+            overflow: hidden;
+            touch-action: none;
+            cursor: default;
+        }
+
+        #slider-track::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: repeating-linear-gradient(0deg, transparent 0 28px, rgba(49, 83, 63, .8) 28px 30px);
+            pointer-events: none;
+        }
+
+        #slider-knob {
+            position: absolute;
+            left: 50%;
+            top: calc(100% - 38px);
+            width: 54px;
+            height: 18px;
+            transform: translateX(-50%);
+            background: #f3e7bd;
+            border: 3px solid #10251d;
+            box-shadow: 3px 3px 0 #07120d;
+            z-index: 2;
+            pointer-events: none;
+        }
+
+        #slider-knob::after {
+            content: "";
+            position: absolute;
+            inset: 2px 13px;
+            background: #e95732;
+        }
+
+        #fish-marker {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            width: 42px;
+            height: 28px;
+            transform: translate(-50%, -50%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: system-ui, sans-serif;
+            font-size: 27px;
+            line-height: 1;
+            filter: drop-shadow(2px 2px 0 #07120d);
+            z-index: 6;
+            pointer-events: none;
+        }
+
+        /* [1] Увеличенная высота */
+        #slider-timer,
+        #slider-time-left {
+            position: relative;
+            flex: 0 0 20px;
+            width: 20px;
+            height: min(65dvh, 520px);
+            min-height: 300px;
+            border: 2px solid #f3e7bd;
+            background: #17221c;
+            box-shadow: 3px 3px 0 #07120d;
+            overflow: hidden;
+        }
+
+        #slider-timer-fill {
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            width: 100%;
+            height: 0%;
+            transform-origin: bottom center;
+            background: #63b85b;
+            transition: height .05s linear, background .12s;
+        }
+
+        #slider-time-left-fill {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            transform-origin: top center;
+            background: #e95732;
+            transition: height .05s linear;
+        }
+
+        #slider-time-left {
+            border-color: #e95732;
+            box-shadow: 3px 3px 0 #07120d;
+        }
+
+        @media (max-width:360px) {
+            .slider-playfield {
+                gap: 9px;
+            }
+
+            #slider-track {
+                width: 58px;
+            }
+
+            #slider-timer,
+            #slider-time-left {
+                flex-basis: 16px;
+                width: 16px;
+            }
+        }
+
+        .fish-action-button {
+            position: absolute;
+            bottom: 8%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: min(90vw, 340px);
+            min-height: 58px;
+            padding: 14px 18px;
+            font-family: "Press Start 2P", system-ui;
+            font-size: clamp(10px, 2.8vw, 13px);
+            line-height: 1.6;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            background: #e7d79e;
+            border: 3px solid #f3e7bd;
+            color: #10251d;
+            border-radius: 0;
+            box-shadow: 5px 5px 0 #07120d;
+            font-weight: 900;
+            touch-action: none;
+            cursor: pointer;
+            z-index: 25;
+        }
+
+        .fish-action-button[hidden] {
+            display: none !important;
+        }
+
+        .fish-action-button:active {
+            transform: translateX(-50%) translate(3px, 3px);
+            box-shadow: 1px 1px 0 #07120d;
+            background: #d6c997;
+        }
+
+        #notification {
+            top: 36%;
+            left: 50%;
+            max-width: 94vw;
+            white-space: normal;
+            text-align: center;
+            font-size: clamp(13px, 4vw, 22px);
+            line-height: 1.8;
+            color: #f3e7bd;
+            z-index: 40;
+        }
+
+        .catch-modal[hidden] {
+            display: none !important;
+        }
+
+        .catch-modal {
+            position: fixed;
+            inset: 0;
+            z-index: 500;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 22px;
+            background: rgba(7, 18, 13, .88);
+        }
+
+        .catch-modal-card {
+            width: min(92vw, 390px);
+            padding: 24px 20px;
+            border: 3px solid #f3e7bd;
+            background: #10251d;
+            box-shadow: 7px 7px 0 #07120d;
+            text-align: center;
+            color: #f3e7bd;
+        }
+
+        .catch-modal-fish {
+            font-family: system-ui, sans-serif;
+            font-size: 56px;
+            line-height: 1.2;
+            filter: drop-shadow(3px 3px 0 #07120d);
+        }
+
+        #catch-modal-title {
+            margin: 12px 0 18px;
+            color: #63b85b;
+            font-size: 20px;
+            line-height: 1.6;
+            letter-spacing: 3px;
+        }
+
+        #catch-modal-name {
+            font-size: 12px;
+            line-height: 1.8;
+            overflow-wrap: anywhere;
+        }
+
+        #catch-modal-weight {
+            margin: 12px 0 18px;
+            color: #e7d79e;
+            font-size: 16px;
+            line-height: 1.7;
+        }
+
+        .catch-modal-note {
+            color: #9eaf86;
+            font-size: 8px;
+            line-height: 1.8;
+            letter-spacing: 1px;
+        }
+
+        .catch-modal-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 11px;
+            margin-top: 20px;
+        }
+
+        .catch-modal-actions button {
+            width: 100%;
+            min-height: 48px;
+            padding: 10px;
+            font-family: "Press Start 2P", system-ui;
+            font-size: 9px;
+            line-height: 1.7;
+            border: 3px solid #f3e7bd;
+            box-shadow: 4px 4px 0 #07120d;
+            background: #e7d79e;
+            color: #10251d;
+            cursor: pointer;
+            pointer-events: auto;
+            z-index: 510;
+        }
+
+        .catch-modal-actions button.secondary {
+            background: #17221c;
+            color: #f3e7bd;
+        }
+
+        .debug-label {
+            position: absolute;
+            top: 52px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #63b85b;
+            font-size: 8px;
+            letter-spacing: 2px;
+            z-index: 15;
+        }
+
+        .player-header {
+            color: #9eaf86;
+        }
+
+        .player-header .ph-name {
+            color: #9eaf86;
+        }
+
+        .pioneer-footer {
+            font-size: 8px;
+            letter-spacing: 1.2px;
+        }
+
+        @media (max-height:620px) {
+            #status {
+                flex-basis: 19dvh;
+                height: 19dvh;
+                min-height: 100px;
+                padding-top: 46px;
+                gap: 7px;
+            }
+
+            #slider-track,
+            #slider-timer,
+            #slider-time-left {
+                height: min(60dvh, 420px);
+                min-height: 240px;
+            }
+
+            #input-zone {
+                gap: 8px;
+                padding-bottom: 36px;
+            }
         }
     </style>
 </head>
+
 <body>
+    <main id="game" class="battle-ready fishing-mode">
+        <div class="player-header">
+            <div class="ph-name" id="player-name">-</div>
+            <div class="ph-energy" id="session-label">-</div>
+        </div>
+        <div id="debug-label" class="debug-label" hidden></div>
 
-    <div class="card">
-        <h2>Привет, <span id="username">Незнакомец</span>!</h2>
-        <p>ID: <span id="userid">-</span></p>
-        <p>Это тестовое Telegram Web App на GitHub Pages.</p>
-    </div>
+        <section id="status" aria-live="polite">
+            <div id="fish-title">ТИХАЯ ЗАВОДЬ</div>
+            <div id="fish-status">Забрось удочку и жди поклёвку.</div>
+        </section>
 
-    <!-- Кнопка внутри страницы (альтернатива MainButton) -->
-    <button onclick="sendDataToBot()">Отправить данные в бота</button>
+        <section id="input-zone">
+            <div id="water-scene" class="water-scene" aria-hidden="true">
+                <div class="sky" aria-hidden="true">
+                    <div class="cloud cloud-1">
+                        <div class="cloud-line cl-short"></div>
+                        <div class="cloud-line cl-long"></div>
+                        <div class="cloud-line cl-long"></div>
+                        <div class="cloud-line cl-short"></div>
+                    </div>
+                    <div class="cloud cloud-2">
+                        <div class="cloud-line cl-short"></div>
+                        <div class="cloud-line cl-long"></div>
+                        <div class="cloud-line cl-short"></div>
+                    </div>
+                    <div class="cloud cloud-3">
+                        <div class="cloud-line cl-short"></div>
+                        <div class="cloud-line cl-long"></div>
+                        <div class="cloud-line cl-long"></div>
+                        <div class="cloud-line cl-long"></div>
+                        <div class="cloud-line cl-short"></div>
+                    </div>
+                    <div class="cloud cloud-4">
+                        <div class="cloud-line cl-short"></div>
+                        <div class="cloud-line cl-long"></div>
+                        <div class="cloud-line cl-short"></div>
+                    </div>
+                </div>
+
+                <div class="wave wave-1" aria-hidden="true">
+                    ~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~
+                </div>
+                <div class="wave wave-2" aria-hidden="true">
+                    ~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~
+                </div>
+                <div class="wave wave-3" aria-hidden="true">
+                    ~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~
+                </div>
+
+                <div class="rod">
+                    <div class="rod-line"></div>
+                    <div class="rod-reel"></div>
+                </div>
+                <div class="fishing-line">
+                    <div class="bobber" id="bobber"></div>
+                </div>
+            </div>
+
+            <div id="slider-game" aria-label="Шкала вываживания рыбы">
+                <div class="slider-playfield">
+                    <div id="slider-time-left" role="progressbar" aria-label="Оставшееся время вываживания"
+                        aria-valuemin="0" aria-valuemax="100" aria-valuenow="100">
+                        <div id="slider-time-left-fill"></div>
+                    </div>
+                    <div id="slider-track" aria-label="Вертикальная шкала вываживания">
+                        <div id="fish-marker" aria-hidden="true">🐟</div>
+                        <div id="slider-knob"></div>
+                    </div>
+                    <div id="slider-timer" role="progressbar" aria-label="Прогресс поимки" aria-valuemin="0"
+                        aria-valuemax="100" aria-valuenow="0">
+                        <div id="slider-timer-fill"></div>
+                    </div>
+                </div>
+            </div>
+            <button id="action-button" class="fish-action-button" type="button">РЫБАЧИТЬ</button>
+        </section>
+
+        <div id="notification" role="status" aria-live="polite"></div>
+        <div id="catch-modal" class="catch-modal" role="dialog" aria-modal="true" aria-labelledby="catch-modal-title"
+            hidden>
+            <div class="catch-modal-card">
+                <div class="catch-modal-fish" aria-hidden="true">🐟</div>
+                <h2 id="catch-modal-title">УЛОВ!</h2>
+                <div id="catch-modal-name">Рыба</div>
+                <div id="catch-modal-weight">0,00 кг</div>
+                <div class="catch-modal-note">ПОЙМАННАЯ РЫБА СОХРАНЕНА</div>
+                <div class="catch-modal-actions">
+                    <button id="catch-modal-close" class="secondary" type="button">ПОНЯТНО</button>
+                    <button id="catch-modal-again" type="button">РЫБАЧИТЬ СНОВА</button>
+                </div>
+            </div>
+        </div>
+        <div id="flash-overlay"></div>
+        <div class="grass" id="grass-container" aria-hidden="true"></div>
+        <div class="pioneer-footer">OOO «Пионерлагерь Ромашка»</div>
+    </main>
 
     <script>
-        // Инициализация Web App
-        const tg = window.Telegram.WebApp;
+        'use strict';
+        const DEBUG_MODE = Boolean(window.FISHING_DEBUG_BOOT);
+        const tg = DEBUG_MODE ? null : (window.Telegram?.WebApp || null);
+        if (!DEBUG_MODE && tg) { tg.ready(); tg.expand(); }
 
-        // Сообщаем Telegram, что приложение готово
-        tg.ready();
+        window.BATTLE_API_URL = window.BATTLE_API_URL || 'https://jesterapi.ddns.net';
 
-        // Разворачиваем приложение на весь экран
-        tg.expand();
+        async function loadEnvConfig() {
+            try {
+                const response = await fetch('/.env');
+                if (response.ok) {
+                    const text = await response.text();
+                    const lines = text.split('\n');
+                    for (const line of lines) {
+                        const match = line.match(/^\s*BATTLE_API_URL\s*=\s*(.+?)\s*$/);
+                        if (match) {
+                            window.BATTLE_API_URL = match[1].replace(/^["']|["']$/g, '');
+                            console.log("✅ BATTLE_API_URL загружен из .env:", window.BATTLE_API_URL);
+                            break;
+                        }
+                    }
+                }
+            } catch (error) {
+                console.warn("⚠️ Файл .env не найден. Используется значение по умолчанию.");
+            } finally {
+                if (window.BATTLE_API_URL) {
+                    window.BATTLE_API_URL = window.BATTLE_API_URL.replace(/\/$/, "");
+                }
+            }
+        }
+        loadEnvConfig();
 
-        // 1. ПОЛУЧЕНИЕ ДАННЫХ ИЗ TELEGRAM
-        // initDataUnsafe содержит данные о пользователе (безопасно только для отображения!)
-        const user = tg.initDataUnsafe?.user;
+        const initData = DEBUG_MODE ? '' : (tg?.initData || '');
+        const DEBUG_FISH = Object.freeze({
+            fish_id: 'debug-pike', fish_name: 'Тестовая щука', fish_weight_kg: 2.4,
+            fishing_config: {
+                weight_factor: 0.37, fish_speed: 0.37, catch_window: 0.162,
+                progress_gain_per_second: 0.35, progress_loss_per_second: 0.13,
+                knob_speed: 0.58, max_duration_seconds: 24
+            }
+        });
 
-        if (user) {
-            document.getElementById('username').innerText = user.first_name + (user.last_name ? ' ' + user.last_name : '');
-            document.getElementById('userid').innerText = user.id;
+        const els = {
+            title: document.getElementById('fish-title'), status: document.getElementById('fish-status'),
+            water: document.getElementById('water-scene'), bobber: document.getElementById('bobber'),
+            slider: document.getElementById('slider-game'), track: document.getElementById('slider-track'),
+            knob: document.getElementById('slider-knob'), fish: document.getElementById('fish-marker'),
+            progress: document.getElementById('slider-timer-fill'), progressTrack: document.getElementById('slider-timer'),
+            timeLeft: document.getElementById('slider-time-left-fill'), timeLeftTrack: document.getElementById('slider-time-left'),
+            catchModal: document.getElementById('catch-modal'), catchModalName: document.getElementById('catch-modal-name'),
+            catchModalWeight: document.getElementById('catch-modal-weight'), catchModalClose: document.getElementById('catch-modal-close'),
+            catchModalAgain: document.getElementById('catch-modal-again'),
+            button: document.getElementById('action-button'),
+            notification: document.getElementById('notification'), debugLabel: document.getElementById('debug-label'),
+            player: document.getElementById('player-name'), session: document.getElementById('session-label'),
+            game: document.getElementById('game')
+        };
+
+        const state = {
+            phase: 'idle', battle: null, fishData: null, timers: [], loopId: null, holding: false,
+            knobPosition: 0.04, fishPosition: 0.52, fishDirection: 1, nextFishTurn: 0,
+            progress: 0, lastFrame: 0, sliderStartedAt: 0, sessionNonce: 0, fakeHookAttempted: false, suppressClickUntil: 0
+        };
+
+        if (DEBUG_MODE) {
+            els.debugLabel.hidden = false;
         }
 
-        // Настройка главной кнопки (MainButton) внизу экрана
-        tg.MainButton.setText("ОТПРАВИТЬ ДАННЫЕ И ЗАКРЫТЬ");
-        tg.MainButton.show();
-
-        // 2. ОТПРАВКА ДАННЫХ В БОТА
-        // Функция sendData закрывает Web App и отправляет строку в чат с ботом от имени пользователя
-        function sendDataToBot() {
-            const dataToSend = JSON.stringify({
-                action: "test_action",
-                message: "Привет из Web App!",
-                timestamp: new Date().toISOString()
+        function apiRequest(path, options = {}) {
+            if (DEBUG_MODE) throw new Error('API is disabled in debug mode');
+            if (!initData) throw new Error('Откройте игру внутри Telegram WebApp: initData отсутствует. Для автономного теста добавьте ?debug=1.');
+            return fetch(`${window.BATTLE_API_URL}${path}`, {
+                ...options,
+                headers: { 'Content-Type': 'application/json', 'X-Init-Data': initData, ...(options.headers || {}) }
+            }).then(async response => {
+                const payload = await response.json().catch(() => ({}));
+                if (!response.ok) {
+                    const detail = typeof payload.detail === 'string' ? payload.detail : (payload.detail?.message || `HTTP ${response.status}`);
+                    throw new Error(detail);
+                }
+                return payload;
             });
-            
-            // Отправка данных (строка)
-            tg.sendData(dataToSend);
         }
 
-        // Привязываем отправку к главной кнопке Telegram
-        tg.MainButton.onClick(sendDataToBot);
+        function vibrate(kind) {
+            if (DEBUG_MODE) return;
 
+            if (tg?.HapticFeedback) {
+                try {
+                    if (kind === 'long') {
+                        tg.HapticFeedback.notificationOccurred('warning');
+                        tg.HapticFeedback.impactOccurred('heavy');
+                        setTimeout(() => {
+                            try { tg.HapticFeedback.impactOccurred('rigid'); } catch (_) { }
+                        }, 80);
+                    } else {
+                        tg.HapticFeedback.impactOccurred('medium');
+                    }
+                } catch (e) {
+                    console.warn('[vibrate] HapticFeedback failed:', e);
+                }
+            }
+
+            if (typeof navigator.vibrate === 'function') {
+                try {
+                    if (kind === 'long') {
+                        navigator.vibrate([200, 50, 150, 50, 200, 50, 150]);
+                    } else {
+                        navigator.vibrate([40, 20, 40]);
+                    }
+                } catch (e) {
+                    console.warn('[vibrate] navigator.vibrate failed:', e);
+                }
+            }
+        }
+
+        function showNotification(text, color = '#f3e7bd', duration = 850) {
+            els.notification.textContent = text;
+            els.notification.style.color = color;
+            els.notification.classList.remove('show');
+            void els.notification.offsetWidth;
+            els.notification.classList.add('show');
+            if (duration > 0) setTimeout(() => els.notification.classList.remove('show'), duration);
+        }
+
+        function schedule(fn, delay) {
+            const id = setTimeout(fn, delay);
+            state.timers.push(id);
+            return id;
+        }
+        function clearTimers() {
+            state.timers.forEach(clearTimeout);
+            state.timers = [];
+            if (state.loopId != null) cancelAnimationFrame(state.loopId);
+            state.loopId = null;
+        }
+
+        function resetSingleScreen(message = 'Забрось удочку и жди поклёвку.') {
+            clearTimers();
+            state.phase = 'idle'; state.holding = false; state.progress = 0;
+            els.water.hidden = false;
+            els.water.classList.remove('cast', 'fake-bite', 'real-bite');
+            els.slider.classList.remove('visible');
+            els.progress.style.height = '0%';
+            els.timeLeft.style.height = '100%';
+            els.timeLeftTrack.setAttribute('aria-valuenow', '100');
+            els.catchModal.hidden = true;
+            els.progress.classList.remove('warn');
+            els.progressTrack.setAttribute('aria-valuenow', '0');
+            els.status.textContent = message;
+            els.button.hidden = false;
+            els.button.textContent = 'РЫБАЧИТЬ';
+        }
+
+        async function createFishingSession() {
+            if (DEBUG_MODE) {
+                state.battle = { id: 0 };
+                state.fishData = { ...DEBUG_FISH, fishing_config: { ...DEBUG_FISH.fishing_config } };
+                return;
+            }
+            const payload = await apiRequest('/fishing/start', { method: 'POST', body: JSON.stringify({}) });
+            if (!payload.battle?.data || payload.battle.data.game_mode !== 'fishing') throw new Error('API не вернул рыболовную битву');
+            state.battle = payload.battle;
+            state.fishData = {
+                fish_id: payload.battle.data.fish_id,
+                fish_name: payload.battle.data.fish_name,
+                fish_weight_kg: Number(payload.battle.data.fish_weight_kg),
+                fishing_config: payload.battle.fishing_config || payload.battle.data.fishing_config || {}
+            };
+        }
+
+        async function startFishing() {
+            if (state.phase !== 'idle') return;
+            els.button.hidden = true;
+            state.phase = 'creating';
+            els.title.textContent = 'ТИХАЯ ЗАВОДЬ';
+            els.status.textContent = 'Готовим снасти…';
+            try {
+                await createFishingSession();
+                state.phase = 'casting';
+                els.water.classList.remove('fake-bite', 'real-bite');
+                els.water.classList.add('cast');
+                els.status.textContent = 'Забрасываем удочку…';
+                schedule(() => {
+                    if (state.phase !== 'casting') return;
+                    state.phase = 'waiting';
+                    els.water.classList.remove('cast');
+                    els.title.textContent = '';
+                    els.status.textContent = '';
+                    state.sessionNonce += 1;
+                    scheduleNextBite(state.sessionNonce, 0);
+                }, 700);
+            } catch (error) {
+                console.error('[fishing] start failed', error);
+                state.phase = 'idle';
+                els.status.textContent = error.message || 'Не удалось начать рыбалку.';
+            }
+        }
+
+        function scheduleNextBite(nonce, fakeCount) {
+            const delay = 1050 + Math.random() * 5750;
+            schedule(() => {
+                if (state.phase !== 'waiting' || nonce !== state.sessionNonce) return;
+                const isFake = fakeCount < 2 && Math.random() < (fakeCount === 0 ? 0.66 : 0.38);
+                if (isFake) {
+                    state.phase = 'fake-bite';
+                    state.fakeHookAttempted = false;
+                    els.water.classList.remove('fake-bite', 'real-bite');
+                    void els.water.offsetWidth;
+                    els.water.classList.add('fake-bite');
+                    vibrate('short');
+                    els.title.textContent = '';
+                    showNotification('РАНО', '#d6c997', 480);
+                    els.status.textContent = '';
+                    schedule(() => {
+                        if (state.phase !== 'fake-bite' || nonce !== state.sessionNonce) return;
+                        els.water.classList.remove('fake-bite');
+                        state.phase = 'waiting';
+                        els.title.textContent = '';
+                        els.status.textContent = '';
+                        scheduleNextBite(nonce, fakeCount + 1);
+                    }, 1100);
+                    return;
+                }
+                state.phase = 'real-bite';
+                els.water.classList.remove('fake-bite');
+                els.water.classList.add('real-bite');
+                vibrate('long');
+                els.title.textContent = '';
+                els.status.textContent = '';
+                schedule(() => {
+                    if (state.phase !== 'real-bite') return;
+                    finishFishing('escaped', 0, 'РЫБА СОРВАЛАСЬ');
+                }, 1900);
+            }, delay);
+        }
+
+        function hookFish() {
+            if (state.phase === 'fake-bite') {
+                if (state.fakeHookAttempted) return;
+                state.fakeHookAttempted = true;
+                vibrate('short');
+                els.button.hidden = false;
+                showNotification('РАНО!', '#e95732', 700);
+                finishFishing('escaped', 0, 'СОРВАЛАСЬ!', 'Слишком рано подсёк! Рыба сорвалась.');
+                return;
+            }
+            if (state.phase !== 'real-bite') return;
+            clearTimers();
+            vibrate('short');
+            state.phase = 'playing';
+            state.holding = false;
+            state.progress = 0;
+            state.knobPosition = 0.04;
+            state.fishPosition = 0.55;
+            state.fishDirection = Math.random() < 0.5 ? -1 : 1;
+            state.nextFishTurn = 0.55;
+            state.lastFrame = 0;
+            state.sliderStartedAt = performance.now();
+            els.title.textContent = '';
+            els.status.textContent = '';
+            els.water.hidden = true;
+            els.slider.classList.add('visible');
+            els.progress.style.height = '0%';
+            els.timeLeft.style.height = '100%';
+            els.timeLeftTrack.setAttribute('aria-valuenow', '100');
+            renderSliderPositions();
+            state.loopId = requestAnimationFrame(updateFishingLoop);
+        }
+
+        function renderSliderPositions() {
+            const trackHeight = els.track.clientHeight;
+            const knobHeight = els.knob.offsetHeight || 12;
+            const fishHeight = els.fish.offsetHeight || 28;
+            const knobY = knobHeight / 2 + (1 - state.knobPosition) * Math.max(0, trackHeight - knobHeight);
+            const fishY = fishHeight / 2 + (1 - state.fishPosition) * Math.max(0, trackHeight - fishHeight);
+            els.knob.style.top = `${knobY}px`;
+            els.fish.style.top = `${fishY}px`;
+        }
+
+        function updateFishingLoop(now) {
+            if (state.phase !== 'playing') return;
+            if (!state.lastFrame) state.lastFrame = now;
+            const dt = Math.min(0.05, (now - state.lastFrame) / 1000);
+            state.lastFrame = now;
+            const config = state.fishData.fishing_config;
+
+            if (state.holding) state.knobPosition += config.knob_speed * dt;
+            else state.knobPosition -= 1.0 * dt;
+            state.knobPosition = Math.max(0.025, Math.min(0.975, state.knobPosition));
+
+            state.nextFishTurn -= dt;
+            if (state.nextFishTurn <= 0) {
+                state.fishDirection = Math.random() < 0.5 ? -1 : 1;
+                state.nextFishTurn = 0.45 + Math.random() * 0.95;
+            }
+            state.fishPosition += state.fishDirection * config.fish_speed * dt;
+            if (state.fishPosition < 0.05) { state.fishPosition = 0.05; state.fishDirection = 1; }
+            if (state.fishPosition > 0.95) { state.fishPosition = 0.95; state.fishDirection = -1; }
+
+            const aligned = Math.abs(state.knobPosition - state.fishPosition) <= config.catch_window / 2;
+            if (aligned) state.progress += config.progress_gain_per_second * dt;
+            else state.progress -= config.progress_loss_per_second * dt;
+            state.progress = Math.max(0, Math.min(1, state.progress));
+            els.progress.style.height = `${state.progress * 100}%`;
+            els.progressTrack.setAttribute('aria-valuenow', String(Math.round(state.progress * 100)));
+            els.progress.classList.toggle('warn', !aligned && state.progress < 0.2);
+            renderSliderPositions();
+
+            const elapsed = performance.now() - state.sliderStartedAt;
+            const maxDurationMs = Math.max(1, Number(config.max_duration_seconds) || 24) * 1000;
+            const remainingRatio = Math.max(0, 1 - elapsed / maxDurationMs);
+            els.timeLeft.style.height = `${remainingRatio * 100}%`;
+            els.timeLeftTrack.setAttribute('aria-valuenow', String(Math.round(remainingRatio * 100)));
+            if (state.progress >= 1) {
+                const elapsedMs = Math.round(elapsed);
+                finishFishing('caught', elapsedMs, 'РЫБА ПОЙМАНА!');
+                return;
+            }
+            if (elapsed >= maxDurationMs) {
+                finishFishing('escaped', Math.round(elapsed), 'РЫБА УШЛА');
+                return;
+            }
+            state.loopId = requestAnimationFrame(updateFishingLoop);
+        }
+
+        function showCatchModal(fish) {
+            const weight = Number(fish.fish_weight_kg).toLocaleString('ru-RU', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            els.catchModalClose.blur()
+            els.catchModalAgain.blur()
+            els.catchModalName.textContent = fish.fish_name || 'Неизвестная рыба';
+            els.catchModalWeight.textContent = `${weight} кг`;
+            els.catchModal.hidden = false;
+            els.catchModalClose.focus();
+        }
+
+        async function finishFishing(result, elapsedMs, message, customStatus) {
+            if (['caught', 'escaped', 'saving'].includes(state.phase)) return;
+            clearTimers();
+            state.holding = false;
+            state.phase = 'saving';
+            const fish = state.fishData || DEBUG_FISH;
+            try {
+                if (!DEBUG_MODE) {
+                    await apiRequest('/fishing/finish', {
+                        method: 'POST',
+                        body: JSON.stringify({ battle_id: state.battle.id, result, elapsed_ms: elapsedMs })
+                    });
+                }
+            } catch (error) {
+                console.error('[fishing] finish failed', error);
+                state.phase = 'error';
+                els.status.textContent = `Результат не сохранён: ${error.message}`;
+                return;
+            }
+            state.phase = result;
+            els.water.hidden = true;
+            els.title.textContent = message;
+            if (result === 'caught') {
+                els.status.textContent = `${fish.fish_name} · ${Number(fish.fish_weight_kg).toFixed(2)} кг`;
+                els.fish.textContent = '🐟';
+                els.progress.classList.remove('warn');
+                vibrate('short');
+                showNotification(`${fish.fish_name} · ${Number(fish.fish_weight_kg).toFixed(2)} КГ`, '#63b85b', 1400);
+                showCatchModal(fish);
+            } else {
+                els.status.textContent = customStatus || 'Рыба ушла на глубину. Попробуй снова.';
+                showNotification(message, '#e95732', 1100);
+            }
+            state.phase = result;
+        }
+
+        els.catchModal.addEventListener('pointerdown', e => e.stopPropagation());
+        els.catchModal.addEventListener('pointerup', e => e.stopPropagation());
+        els.catchModal.addEventListener('click', e => e.stopPropagation());
+
+        els.catchModalClose.addEventListener('click', (e) => {
+            e.stopPropagation();
+            resetSingleScreen();
+        });
+
+        els.catchModalAgain.addEventListener('click', (e) => {
+            e.stopPropagation();
+            resetSingleScreen();
+            setTimeout(() => startFishing(), 50);
+        });
+
+        els.button.addEventListener('click', event => {
+            event.stopPropagation();
+            if (state.phase !== 'idle') return;
+            void startFishing();
+        });
+
+        els.game.addEventListener('click', event => {
+            if (event.target.closest('.catch-modal')
+                || event.target.closest('#slider-game')
+                || event.target.closest('.fish-action-button')) return;
+
+            if (performance.now() < state.suppressClickUntil) {
+                state.suppressClickUntil = 0;
+                return;
+            }
+
+            if (state.phase === 'idle' || state.phase === 'caught' || state.phase === 'escaped' || state.phase === 'error') {
+                els.catchModal.hidden = true;
+                resetSingleScreen();
+                void startFishing();
+            } else if (state.phase === 'real-bite' || state.phase === 'fake-bite') {
+                hookFish();
+            }
+        });
+
+        els.game.addEventListener('pointerdown', event => {
+            if (event.target.closest('.catch-modal')) return;
+            if (state.phase !== 'playing') return;
+            event.preventDefault();
+            state.holding = true;
+            state.suppressClickUntil = performance.now() + 500;
+        });
+
+        els.game.addEventListener('pointerup', () => {
+            if (state.phase !== 'playing') return;
+            state.holding = false;
+        });
+
+        ['pointercancel', 'pointerleave'].forEach(type => {
+            els.game.addEventListener(type, () => {
+                if (state.phase !== 'playing') return;
+                state.holding = false;
+            });
+        });
+
+        document.addEventListener('keydown', event => {
+            if (event.code !== 'Space' && event.code !== 'ArrowUp') return;
+            if ((state.phase === 'real-bite' || state.phase === 'fake-bite') && event.code === 'Space') {
+                event.preventDefault();
+                hookFish();
+                return;
+            }
+            if (state.phase !== 'playing') return;
+            event.preventDefault();
+            state.holding = true;
+        });
+
+        document.addEventListener('keyup', event => {
+            if (event.code === 'Space' || event.code === 'ArrowUp') state.holding = false;
+        });
+
+        window.addEventListener('blur', () => { state.holding = false; });
+
+        if (!DEBUG_MODE && !tg) {
+            els.status.textContent = 'Открой игру в Telegram. Для локального теста добавь ?debug=1.';
+        }
+
+
+        function renderGrass() {
+            const container = document.getElementById('grass-container');
+            if (!container) return;
+            const width = Math.max(200, container.offsetWidth);
+            const heightPx = container.offsetHeight || 180;
+            const baseY = heightPx;
+            const NS = 'http://www.w3.org/2000/svg';
+            const rnd = (a, b) => a + Math.random() * (b - a);
+
+            const svg = document.createElementNS(NS, 'svg');
+            svg.setAttribute('viewBox', `0 0 ${width} ${baseY}`);
+            svg.setAttribute('preserveAspectRatio', 'xMidYMax meet');
+
+            const layerBack = document.createElementNS(NS, 'g');
+            const layerReeds = document.createElementNS(NS, 'g');
+            const layerFront = document.createElementNS(NS, 'g');
+            svg.append(layerBack, layerReeds, layerFront);
+
+            function heightProfile(x, w) {
+                const t = x / w;
+                const dist = Math.abs(t - 0.5) * 2;
+                return 0.45 + 0.55 * Math.pow(dist, 1.6);
+            }
+
+            function makeBlade(x, h, lean, colorLeft, colorRight, halfW) {
+                halfW = halfW || 2;
+                const g = document.createElementNS(NS, 'g');
+                g.setAttribute('class', 'grass-blade-svg');
+                g.style.setProperty('--dur', rnd(2.2, 4.6).toFixed(2) + 's');
+                g.style.setProperty('--delay', (-rnd(0, 4)).toFixed(2) + 's');
+                g.style.setProperty('--lean', lean.toFixed(2) + 'deg');
+
+                const left = document.createElementNS(NS, 'rect');
+                left.setAttribute('x', (x - halfW).toFixed(2));
+                left.setAttribute('y', (baseY - h).toFixed(2));
+                left.setAttribute('width', halfW);
+                left.setAttribute('height', h);
+                left.setAttribute('fill', colorLeft);
+
+                const right = document.createElementNS(NS, 'rect');
+                right.setAttribute('x', x.toFixed(2));
+                right.setAttribute('y', (baseY - h).toFixed(2));
+                right.setAttribute('width', halfW);
+                right.setAttribute('height', h);
+                right.setAttribute('fill', colorRight);
+
+                g.appendChild(left);
+                g.appendChild(right);
+                return g;
+            }
+
+            const COL_BACK_L = '#1d3a2a';
+            const COL_BACK_R = '#2a4a3a';
+            const COL_FRONT_L = '#31533f';
+            const COL_FRONT_R = '#4a7a5c';
+            const COL_STEM_L = '#2a4a3a';
+            const COL_STEM_R = '#4a7a5c';
+            const COL_HEAD_L = '#4a2f18';
+            const COL_HEAD_R = '#7a4a25';
+            const COL_HEAD_HI = '#a0683a';
+            const COL_TUFT = '#d6c997';
+            const COL_FLOWER = '#f3e7bd';
+            const COL_LEAF_L = '#31533f';
+
+            const step = Math.max(5, width / 75);
+            let x = -3;
+            while (x < width + 5) {
+                const clusterSize = 1 + Math.floor(Math.random() * 3);
+                for (let i = 0; i < clusterSize; i++) {
+                    const cx = x + i * 3 + rnd(-1, 1);
+                    const profile = heightProfile(cx, width);
+
+                    const hBack = (rnd(35, 65) * profile) + rnd(10, 20);
+                    const hFront = (rnd(55, 120) * profile) + rnd(15, 30);
+
+                    const leanBack = rnd(-8, 8);
+                    const leanFront = rnd(-10, 10);
+                    layerBack.appendChild(makeBlade(cx, hBack, leanBack, COL_BACK_L, COL_BACK_R));
+                    layerFront.appendChild(makeBlade(cx, hFront, leanFront, COL_FRONT_L, COL_FRONT_R));
+                }
+                x += step + rnd(-2, 3);
+            }
+
+            // for (let i = 0; i < Math.floor(width / 60); i++) {
+            //   const fx = Math.floor(rnd(2, width - 2));
+            //   const fy = Math.floor(baseY - rnd(30, 65));
+            //   const sq = document.createElementNS(NS, 'rect');
+            //   sq.setAttribute('x', fx);
+            //   sq.setAttribute('y', fy);
+            //   sq.setAttribute('width', 2);
+            //   sq.setAttribute('height', 2);
+            //   sq.setAttribute('fill', Math.random() > 0.6 ? COL_FLOWER : '#e7d79e');
+            //   layerFront.appendChild(sq);
+            // }
+
+            function addReed(rx) {
+                const profile = heightProfile(rx, width);
+                const h = (rnd(130, 190) * profile) + rnd(20, 40);
+                const lean = rnd(-8, 8);
+                const topY = baseY - h;
+                const headH = Math.round(rnd(18, 24));
+                const headW = 8;
+                const halfW = headW / 2;
+                const stemH = h - headH;
+
+                const g = document.createElementNS(NS, 'g');
+                g.setAttribute('class', 'grass-reed');
+                g.style.setProperty('--dur', rnd(3.6, 5.4).toFixed(2) + 's');
+                g.style.setProperty('--delay', (-rnd(0, 5)).toFixed(2) + 's');
+                g.style.setProperty('--lean', lean.toFixed(2) + 'deg');
+
+                const sL = document.createElementNS(NS, 'rect');
+                sL.setAttribute('x', (rx - 2).toFixed(2));
+                sL.setAttribute('y', (topY + headH).toFixed(2));
+                sL.setAttribute('width', 2);
+                sL.setAttribute('height', stemH);
+                sL.setAttribute('fill', COL_STEM_L);
+
+                const sR = document.createElementNS(NS, 'rect');
+                sR.setAttribute('x', rx.toFixed(2));
+                sR.setAttribute('y', (topY + headH).toFixed(2));
+                sR.setAttribute('width', 2);
+                sR.setAttribute('height', stemH);
+                sR.setAttribute('fill', COL_STEM_R);
+                g.appendChild(sL); g.appendChild(sR);
+
+                const leafCount = Math.random() > 0.5 ? 2 : 1;
+                for (let i = 0; i < leafCount; i++) {
+                    const dir = Math.random() > 0.5 ? 1 : -1;
+                    const ly = Math.round(topY + headH + stemH * rnd(0.3, 0.7));
+                    const lL = document.createElementNS(NS, 'rect');
+                    if (dir > 0) {
+                        lL.setAttribute('x', (rx + 2).toFixed(2));
+                        lL.setAttribute('width', 10);
+                    } else {
+                        lL.setAttribute('x', (rx - 12).toFixed(2));
+                        lL.setAttribute('width', 10);
+                    }
+                    lL.setAttribute('y', ly);
+                    lL.setAttribute('height', 2);
+                    lL.setAttribute('fill', COL_LEAF_L);
+                    g.appendChild(lL);
+                }
+
+                const hL = document.createElementNS(NS, 'rect');
+                hL.setAttribute('x', (rx - halfW).toFixed(2));
+                hL.setAttribute('y', topY.toFixed(2));
+                hL.setAttribute('width', halfW);
+                hL.setAttribute('height', headH);
+                hL.setAttribute('fill', COL_HEAD_L);
+
+                const hR = document.createElementNS(NS, 'rect');
+                hR.setAttribute('x', rx.toFixed(2));
+                hR.setAttribute('y', topY.toFixed(2));
+                hR.setAttribute('width', halfW);
+                hR.setAttribute('height', headH);
+                hR.setAttribute('fill', COL_HEAD_R);
+
+                const hi = document.createElementNS(NS, 'rect');
+                hi.setAttribute('x', (rx - 1).toFixed(2));
+                hi.setAttribute('y', (topY + 2).toFixed(2));
+                hi.setAttribute('width', 1);
+                hi.setAttribute('height', headH - 4);
+                hi.setAttribute('fill', COL_HEAD_HI);
+
+                g.appendChild(hL); g.appendChild(hR); g.appendChild(hi);
+
+                const tuftCount = 5 + Math.floor(Math.random() * 3);
+                for (let i = 0; i < tuftCount; i++) {
+                    const t = i / (tuftCount - 1);
+                    const angle = -40 + t * 80;
+                    const rad = angle * Math.PI / 180;
+                    const len = Math.round(rnd(6, 11));
+                    const dx = Math.sin(rad) * len;
+                    const dy = -Math.cos(rad) * len;
+                    const hair = document.createElementNS(NS, 'line');
+                    hair.setAttribute('x1', rx.toFixed(2));
+                    hair.setAttribute('y1', topY.toFixed(2));
+                    hair.setAttribute('x2', (rx + dx).toFixed(2));
+                    hair.setAttribute('y2', (topY + dy).toFixed(2));
+                    hair.setAttribute('stroke', COL_TUFT);
+                    hair.setAttribute('stroke-width', 1);
+                    g.appendChild(hair);
+                }
+
+                layerReeds.appendChild(g);
+            }
+
+            const reedCount = Math.max(3, Math.floor(width / 90));
+            const reedXs = [];
+            let attempts = 0;
+            while (reedXs.length < reedCount && attempts < 300) {
+                const rx = Math.round(rnd(15, width - 15));
+                const inCenter = rx > width * 0.35 && rx < width * 0.65;
+                if (!inCenter && reedXs.every(p => Math.abs(p - rx) > 40)) {
+                    reedXs.push(rx);
+                }
+                attempts++;
+            }
+            reedXs.forEach(addReed);
+
+            container.innerHTML = '';
+            container.appendChild(svg);
+        }
+
+        renderGrass();
+        let grassResizeTimer = null;
+        window.addEventListener('resize', () => {
+            clearTimeout(grassResizeTimer);
+            grassResizeTimer = setTimeout(renderGrass, 150);
+        });
     </script>
 </body>
+
 </html>
