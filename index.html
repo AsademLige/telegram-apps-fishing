@@ -1659,6 +1659,157 @@
             }
         }
 
+        .sun {
+            position: absolute;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            pointer-events: none;
+            z-index: 2;
+        }
+
+        .sun-1 {
+            top: 4%;
+            right: 9%;
+            animation: sunFloat 8s ease-in-out infinite alternate;
+        }
+
+        .sun-ray-row {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 3px;
+        }
+
+        .sun-ray-core {
+            position: relative;
+            width: 52px;
+            height: 52px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .sun-core {
+            width: 22px;
+            height: 22px;
+            background: #f9c94a;
+            border: 2px solid #e9a528;
+            box-shadow: 2px 2px 0 #07120d;
+        }
+
+        .sun-core::after {
+            content: '';
+            position: absolute;
+            top: 4px;
+            left: 4px;
+            width: 6px;
+            height: 6px;
+            background: #ffdf7a;
+        }
+
+        .sun-line-h,
+        .sun-line-v {
+            position: absolute;
+            background: #f9c94a;
+            box-shadow: 1px 1px 0 #07120d;
+        }
+
+        .sun-line-h {
+            top: 50%;
+            left: 50%;
+            width: 50px;
+            height: 2px;
+            transform: translate(-50%, -50%);
+        }
+
+        .sun-line-v {
+            top: 50%;
+            left: 50%;
+            width: 2px;
+            height: 50px;
+            transform: translate(-50%, -50%);
+        }
+
+        .sun-line-d1,
+        .sun-line-d2 {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 38px;
+            height: 2px;
+            background: #f9c94a;
+            box-shadow: 1px 1px 0 #07120d;
+        }
+
+        .sun-line-d1 {
+            transform: translate(-50%, -50%) rotate(45deg);
+        }
+
+        .sun-line-d2 {
+            transform: translate(-50%, -50%) rotate(-45deg);
+        }
+
+        .sun-line-short {
+            height: 1px;
+            background: #f9c94a;
+            box-shadow: 1px 1px 0 #07120d;
+            width: 18px;
+            opacity: 0.9;
+        }
+
+        .sun-line-long {
+            height: 1px;
+            background: #f9c94a;
+            box-shadow: 1px 1px 0 #07120d;
+            width: 34px;
+        }
+
+        @keyframes sunFloat {
+            0% {
+                transform: translateY(0);
+                opacity: 0.92;
+                filter: brightness(1);
+            }
+
+            100% {
+                transform: translateY(-4px);
+                opacity: 1;
+                filter: brightness(1.18);
+            }
+        }
+
+        @media (max-width: 360px) {
+            .sun-1 {
+                top: 6%;
+                right: 6%;
+            }
+
+            .sun-ray-core {
+                width: 44px;
+                height: 44px;
+            }
+
+            .sun-core {
+                width: 18px;
+                height: 18px;
+            }
+
+            .sun-line-h {
+                width: 42px;
+            }
+
+            .sun-line-v {
+                height: 42px;
+            }
+
+            .sun-line-d1,
+            .sun-line-d2 {
+                width: 32px;
+            }
+        }
+
         .grass {
             position: fixed;
             bottom: 0;
@@ -1712,6 +1863,48 @@
 
             100% {
                 transform: rotate(calc(var(--lean, 0deg) + 2deg));
+            }
+        }
+
+        .firefly {
+            animation: fireflyFloat var(--dur, 3s) ease-in-out infinite;
+            animation-delay: var(--delay, 0s);
+            transform-box: fill-box;
+            transform-origin: center center;
+        }
+
+        .firefly-core {
+            fill: #f9e66b;
+            filter: drop-shadow(0 0 2px #f9e66b) drop-shadow(0 0 4px rgba(249, 230, 107, 0.6));
+        }
+
+        .firefly-glow {
+            fill: #f9e66b;
+            opacity: 0.25;
+        }
+
+        @keyframes fireflyFloat {
+            0% {
+                opacity: 0.15;
+                transform: translateY(0) translateX(0);
+            }
+
+            25% {
+                opacity: 0.9;
+            }
+
+            50% {
+                opacity: 0.7;
+                transform: translateY(-10px) translateX(3px);
+            }
+
+            75% {
+                opacity: 1;
+            }
+
+            100% {
+                opacity: 0.15;
+                transform: translateY(0) translateX(0);
             }
         }
 
@@ -1868,6 +2061,75 @@
 
             100% {
                 transform: translateX(-30px);
+            }
+        }
+
+        .bobber-waves {
+            position: absolute;
+            top: 39%;
+            bottom: -100%;
+            left: 0%;
+            transform: translateX(-50%);
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            pointer-events: none;
+            z-index: 4;
+            transform: rotate(333deg);
+        }
+
+        .bw {
+            font-family: "Handjet", monospace;
+            font-size: 10px;
+            letter-spacing: 1px;
+            color: #5a8a6a;
+            white-space: nowrap;
+            text-shadow: 1px 1px 0 #07120d;
+            user-select: none;
+            text-align: center;
+            min-height: 1em;
+        }
+
+        .bw-upper {
+            position: relative;
+            top: -1%;
+            font-size: 12px;
+            letter-spacing: 2px;
+            color: #6a9a7a;
+            opacity: 0.85;
+            animation: bwFloatUpper 3s ease-in-out infinite;
+        }
+
+        .bw-lower {
+            opacity: 0.55;
+            animation: bwFloatLower 3.5s ease-in-out infinite 0.5s;
+        }
+
+        @keyframes bwFloatUpper {
+
+            0%,
+            100% {
+                transform: translateX(0);
+                opacity: 0.85;
+            }
+
+            50% {
+                transform: translateX(3px);
+                opacity: 0.75;
+            }
+        }
+
+        @keyframes bwFloatLower {
+
+            0%,
+            100% {
+                transform: translateX(0);
+                opacity: 0.55;
+            }
+
+            50% {
+                transform: translateX(-2px);
+                opacity: 0.45;
             }
         }
 
@@ -2348,6 +2610,17 @@
         <section id="input-zone">
             <div id="water-scene" class="water-scene" aria-hidden="true">
                 <div class="sky" aria-hidden="true">
+                    <div class="sun sun-1" aria-hidden="true">
+                        <div class="sun-ray-row">
+                            <div class="sun-line-short"></div>
+                            <div class="sun-line-long"></div>
+                            <div class="sun-line-long"></div>
+                            <div class="sun-line-long"></div>
+                            <div class="sun-line-long"></div>
+                            <div class="sun-line-long"></div>
+                            <div class="sun-line-short"></div>
+                        </div>
+                    </div>
                     <div class="cloud cloud-1">
                         <div class="cloud-line cl-short"></div>
                         <div class="cloud-line cl-long"></div>
@@ -2388,6 +2661,10 @@
                     <div class="rod-reel"></div>
                     <div class="fishing-line">
                         <div class="bobber" id="bobber"></div>
+                    </div>
+                    <div class="bobber-waves" aria-hidden="true">
+                        <div class="bw bw-lower">~-~-~-~-~-~-~-~-</div>
+                        <div class="bw bw-upper">~-~-~-~-~</div>
                     </div>
                 </div>
             </div>
@@ -2487,13 +2764,16 @@
             button: document.getElementById('action-button'),
             notification: document.getElementById('notification'), debugLabel: document.getElementById('debug-label'),
             player: document.getElementById('player-name'), session: document.getElementById('session-label'),
-            game: document.getElementById('game')
+            game: document.getElementById('game'),
+            upperWave: document.querySelector('.bw-upper'),
+            lowerWave: document.querySelector('.bw-lower')
         };
 
         const state = {
             phase: 'idle', battle: null, fishData: null, timers: [], loopId: null, holding: false,
             knobPosition: 0.04, fishPosition: 0.52, fishDirection: 1, nextFishTurn: 0,
-            progress: 0, lastFrame: 0, sliderStartedAt: 0, sessionNonce: 0, fakeHookAttempted: false, suppressClickUntil: 0
+            progress: 0, lastFrame: 0, sliderStartedAt: 0, sessionNonce: 0, fakeHookAttempted: false, suppressClickUntil: 0,
+            splashInterval: null
         };
 
         if (DEBUG_MODE) {
@@ -2569,8 +2849,19 @@
             state.loopId = null;
         }
 
+        function stopSplashAnimation() {
+            if (state.splashInterval) {
+                clearInterval(state.splashInterval);
+                state.splashInterval = null;
+            }
+            if (els.upperWave) {
+                els.upperWave.textContent = '~-~-~-~-~';
+            }
+        }
+
         function resetSingleScreen(message = 'Забрось удочку и жди поклёвку.') {
             clearTimers();
+            stopSplashAnimation();
             state.phase = 'idle'; state.holding = false; state.progress = 0;
             els.water.hidden = false;
             els.water.classList.remove('cast', 'fake-bite', 'real-bite');
@@ -2628,6 +2919,8 @@
                 console.error('[fishing] start failed', error);
                 state.phase = 'idle';
                 els.status.textContent = error.message || 'Не удалось начать рыбалку.';
+                els.button.hidden = false;
+                els.button.textContent = 'РЫБАЧИТЬ';
             }
         }
 
@@ -2662,6 +2955,22 @@
                 vibrate('long');
                 els.title.textContent = '';
                 els.status.textContent = '';
+
+                // Запуск анимации всплесков верхней волны
+                if (els.upperWave) {
+                    let splashOn = false;
+                    const calmText = '~-~-~-~-~';
+                    const splashText = '~\\~|~\\~|~/~-~';
+                    state.splashInterval = setInterval(() => {
+                        if (state.phase !== 'real-bite' && state.phase !== 'playing') {
+                            stopSplashAnimation();
+                            return;
+                        }
+                        splashOn = !splashOn;
+                        els.upperWave.textContent = splashOn ? splashText : calmText;
+                    }, 220);
+                }
+
                 schedule(() => {
                     if (state.phase !== 'real-bite') return;
                     finishFishing('escaped', 0, 'РЫБА СОРВАЛАСЬ');
@@ -2681,6 +2990,7 @@
             }
             if (state.phase !== 'real-bite') return;
             clearTimers();
+            stopSplashAnimation();
             vibrate('short');
             state.phase = 'playing';
             state.holding = false;
@@ -2771,6 +3081,7 @@
         async function finishFishing(result, elapsedMs, message, customStatus) {
             if (['caught', 'escaped', 'saving'].includes(state.phase)) return;
             clearTimers();
+            stopSplashAnimation();
             state.holding = false;
             state.phase = 'saving';
             const fish = state.fishData || DEBUG_FISH;
@@ -2785,6 +3096,8 @@
                 console.error('[fishing] finish failed', error);
                 state.phase = 'error';
                 els.status.textContent = `Результат не сохранён: ${error.message}`;
+                els.button.hidden = false;
+                els.button.textContent = 'РЫБАЧИТЬ';
                 return;
             }
             state.phase = result;
@@ -2800,6 +3113,12 @@
             } else {
                 els.status.textContent = customStatus || 'Рыба ушла на глубину. Попробуй снова.';
                 showNotification(message, '#e95732', 1100);
+                // Показываем кнопку "РЫБАЧИТЬ" обратно после срыва
+                setTimeout(() => {
+                    els.slider.classList.remove('visible');
+                    els.button.hidden = false;
+                    els.button.textContent = 'РЫБАЧИТЬ';
+                }, 800);
             }
             state.phase = result;
         }
@@ -2970,18 +3289,6 @@
                 x += step + rnd(-2, 3);
             }
 
-            // for (let i = 0; i < Math.floor(width / 60); i++) {
-            //   const fx = Math.floor(rnd(2, width - 2));
-            //   const fy = Math.floor(baseY - rnd(30, 65));
-            //   const sq = document.createElementNS(NS, 'rect');
-            //   sq.setAttribute('x', fx);
-            //   sq.setAttribute('y', fy);
-            //   sq.setAttribute('width', 2);
-            //   sq.setAttribute('height', 2);
-            //   sq.setAttribute('fill', Math.random() > 0.6 ? COL_FLOWER : '#e7d79e');
-            //   layerFront.appendChild(sq);
-            // }
-
             function addReed(rx) {
                 const profile = heightProfile(rx, width);
                 const h = (rnd(130, 190) * profile) + rnd(20, 40);
@@ -3087,6 +3394,37 @@
                 attempts++;
             }
             reedXs.forEach(addReed);
+
+            function addFireflies() {
+                const fireflyCount = Math.max(6, Math.floor(width / 55));
+                for (let i = 0; i < fireflyCount; i++) {
+                    const fx = rnd(15, width - 15);
+                    const fy = rnd(baseY - 170, baseY - 30);
+                    const g = document.createElementNS(NS, 'g');
+                    g.setAttribute('class', 'firefly');
+                    g.style.setProperty('--dur', rnd(2.2, 4.8).toFixed(2) + 's');
+                    g.style.setProperty('--delay', (-rnd(0, 4)).toFixed(2) + 's');
+
+                    const glow = document.createElementNS(NS, 'rect');
+                    glow.setAttribute('x', (fx - 2).toFixed(2));
+                    glow.setAttribute('y', (fy - 2).toFixed(2));
+                    glow.setAttribute('width', 6);
+                    glow.setAttribute('height', 6);
+                    glow.setAttribute('class', 'firefly-glow');
+
+                    const core = document.createElementNS(NS, 'rect');
+                    core.setAttribute('x', fx.toFixed(2));
+                    core.setAttribute('y', fy.toFixed(2));
+                    core.setAttribute('width', 2);
+                    core.setAttribute('height', 2);
+                    core.setAttribute('class', 'firefly-core');
+
+                    g.appendChild(glow);
+                    g.appendChild(core);
+                    layerFront.appendChild(g);
+                }
+            }
+            addFireflies();
 
             container.innerHTML = '';
             container.appendChild(svg);
