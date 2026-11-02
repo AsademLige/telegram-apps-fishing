@@ -1873,13 +1873,13 @@
 
         .rod {
             position: absolute;
-            top: 120%;
-            left: -1%;
+            top: 140%;
+            left: 25%;
             width: 5px;
-            height: 137%;
+            height: 107%;
             background: #9eaf86;
             border: 1px solid #07120d;
-            transform: rotate(225deg);
+            transform: rotate(207deg);
             transform-origin: top center;
             box-shadow: 2px 2px 0 #07120d;
         }
@@ -1887,8 +1887,8 @@
         .rod-line {
             position: absolute;
             top: 29%;
-            bottom: 7px;
-            left: -8px;
+            bottom: 12px;
+            left: -6px;
             width: 1px;
             background: #d6c997;
             opacity: 0.9;
@@ -1897,7 +1897,7 @@
         .rod-reel {
             position: absolute;
             top: 27%;
-            left: -30px;
+            left: -29px;
             width: 24px;
             height: 24px;
             background: #17221c;
@@ -1919,17 +1919,18 @@
 
         .fishing-line {
             position: absolute;
-            top: 24%;
+            top: 100%;
             left: calc(70.5% - 1px);
             width: 2px;
             height: 55%;
             background: #d6c997;
             transform-origin: top center;
+            transform: rotate(152deg);
         }
 
         .bobber {
             position: absolute;
-            top: 90%;
+            top: 95%;
             left: -7px;
             width: 17px;
             height: 31px;
@@ -2007,7 +2008,6 @@
             }
         }
 
-        /* [1] Слайдер: фиксированная позиция в нижнем левом углу, увеличенная высота */
         #slider-game {
             position: fixed;
             bottom: 20px;
@@ -2033,7 +2033,6 @@
             gap: 14px;
         }
 
-        /* [1] Увеличенная высота */
         #slider-track {
             position: relative;
             width: 66px;
@@ -2387,9 +2386,9 @@
                 <div class="rod">
                     <div class="rod-line"></div>
                     <div class="rod-reel"></div>
-                </div>
-                <div class="fishing-line">
-                    <div class="bobber" id="bobber"></div>
+                    <div class="fishing-line">
+                        <div class="bobber" id="bobber"></div>
+                    </div>
                 </div>
             </div>
 
