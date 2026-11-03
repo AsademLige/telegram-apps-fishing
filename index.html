@@ -209,299 +209,6 @@
             touch-action: none;
         }
 
-        #enemy-section {
-            display: flex;
-            flex-direction: column;
-            gap: 7px;
-        }
-
-        #enemy-top {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        #enemy-label {
-            font-size: 12px;
-            font-weight: 800;
-            letter-spacing: 3px;
-            color: #f3e7bd;
-            text-transform: uppercase;
-        }
-
-        #enemy-core {
-            font-size: 10px;
-            color: #e95732;
-            letter-spacing: 2px;
-            font-weight: 700;
-        }
-
-        #enemy-hp-bar {
-            height: 10px;
-            background: #17221c;
-            border-radius: 0;
-            overflow: hidden;
-            border: 2px solid #f3e7bd;
-            box-shadow: 3px 3px 0 #07120d;
-        }
-
-        #enemy-hp-fill {
-            height: 100%;
-            width: 100%;
-            background: #e95732;
-            transition: width .22s steps(8, end);
-        }
-
-        #combo {
-            font-size: 13px;
-            letter-spacing: 3px;
-            color: #d6c997;
-            min-height: 18px;
-            text-align: center;
-            font-weight: 800;
-            transition: transform 0.1s ease-out;
-        }
-
-        #combo.pulse {
-            animation: comboPulse var(--pulse-duration, 0.4s) ease-out;
-        }
-
-        @keyframes comboPulse {
-            0% {
-                transform: scale(1);
-            }
-
-            20% {
-                transform: scale(var(--pulse-scale, 1.2)) rotate(var(--pulse-rotate, -3deg));
-            }
-
-            40% {
-                transform: scale(var(--pulse-mid-scale, 1.15)) rotate(var(--pulse-rotate-mid, 2deg));
-            }
-
-            60% {
-                transform: scale(var(--pulse-mid-scale-2, 1.1)) rotate(var(--pulse-rotate-2, -1deg));
-            }
-
-            100% {
-                transform: scale(1);
-            }
-        }
-
-        #combo b {
-            color: #63b85b;
-            display: inline-block;
-            transition: transform 0.15s ease-out;
-        }
-
-        #combo.pulse b {
-            animation: comboValuePulse var(--pulse-duration, 0.4s) ease-out;
-        }
-
-        @keyframes comboValuePulse {
-            0% {
-                transform: scale(1);
-            }
-
-            30% {
-                transform: scale(var(--pulse-value-scale, 1.4));
-            }
-
-            100% {
-                transform: scale(1);
-            }
-        }
-
-        #hearts-section {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-            justify-content: center;
-            width: 100%;
-            margin: 10px auto;
-        }
-
-        .heart {
-            width: 50px;
-            height: 50px;
-            padding: 4px;
-            box-sizing: content-box;
-            transition: transform .2s, opacity .2s;
-            shape-rendering: crispEdges;
-            filter:
-                drop-shadow(3px 0 0 #f3e7bd) drop-shadow(-3px 0 0 #f3e7bd) drop-shadow(0 3px 0 #f3e7bd) drop-shadow(0 -3px 0 #f3e7bd);
-        }
-
-        .heart svg {
-            width: 100%;
-            height: 100%;
-            display: block;
-        }
-
-        .heart.lost {
-            opacity: .15;
-            filter: grayscale(1);
-        }
-
-        .heart.breaking {
-            animation: heartBreak .35s ease-out;
-        }
-
-        .heart.last-heart:not(.lost) {
-            animation: heartShake 0.45s infinite;
-            filter:
-                drop-shadow(3px 0 0 #e95732) drop-shadow(-3px 0 0 #e95732) drop-shadow(0 3px 0 #e95732) drop-shadow(0 -3px 0 #e95732);
-        }
-
-        @keyframes heartShake {
-
-            0%,
-            100% {
-                transform: translate(0, 0) rotate(0deg);
-            }
-
-            10% {
-                transform: translate(-1.5px, -1px) rotate(-2deg);
-            }
-
-            20% {
-                transform: translate(1.5px, -1.5px) rotate(2deg);
-            }
-
-            30% {
-                transform: translate(-1px, 1.5px) rotate(-1deg);
-            }
-
-            40% {
-                transform: translate(1.5px, 1px) rotate(2deg);
-            }
-
-            50% {
-                transform: translate(-1.5px, -1.5px) rotate(-2deg);
-            }
-
-            60% {
-                transform: translate(1px, 0) rotate(1deg);
-            }
-
-            70% {
-                transform: translate(-1.5px, 1.5px) rotate(-2deg);
-            }
-
-            80% {
-                transform: translate(1.5px, -1px) rotate(2deg);
-            }
-
-            90% {
-                transform: translate(0, 1.5px) rotate(-1deg);
-            }
-        }
-
-        @keyframes heartBreak {
-            0% {
-                transform: scale(1);
-            }
-
-            40% {
-                transform: scale(1.5) rotate(-8deg);
-            }
-
-            100% {
-                transform: scale(1);
-            }
-        }
-
-        #slider-monster {
-            position: absolute;
-            left: 50%;
-            top: 5%;
-            width: min(58vw, 440px);
-            height: min(58vw, 440px);
-            transform: translate(-50%, -50%);
-            object-fit: contain;
-            pointer-events: none;
-            opacity: 0.7;
-            z-index: 1;
-        }
-
-        #slider-monster.hit {
-            animation: monsterHit .24s ease-out;
-        }
-
-        @keyframes monsterHit {
-            0% {
-                transform: translate(-50%, -50%) scale(1);
-                filter: brightness(1);
-            }
-
-            25% {
-                transform: translate(-50%, -50%) scale(.96) translateX(-5px);
-                filter: brightness(1.7);
-            }
-
-            50% {
-                transform: translate(-50%, -50%) scale(1.03) translateX(5px);
-                filter: brightness(1.25);
-            }
-
-            100% {
-                transform: translate(-50%, -50%) scale(1);
-            }
-        }
-
-        #slider-monster.death {
-            animation:
-                monsterShake 0.09s linear 14,
-                monsterFadeOut 1.25s ease-out forwards;
-            z-index: 50;
-        }
-
-        @keyframes monsterShake {
-
-            0%,
-            100% {
-                transform: translate(-50%, -50%);
-            }
-
-            20% {
-                transform: translate(calc(-50% - 4px), calc(-50% - 3px));
-            }
-
-            40% {
-                transform: translate(calc(-50% + 4px), calc(-50% + 2px));
-            }
-
-            60% {
-                transform: translate(calc(-50% - 3px), calc(-50% + 4px));
-            }
-
-            80% {
-                transform: translate(calc(-50% + 3px), calc(-50% - 3px));
-            }
-        }
-
-        @keyframes monsterFadeOut {
-            0% {
-                opacity: 0.7;
-            }
-
-            40% {
-                opacity: 0.65;
-            }
-
-            70% {
-                opacity: 0.4;
-            }
-
-            90% {
-                opacity: 0.15;
-            }
-
-            100% {
-                opacity: 0;
-            }
-        }
-
         #slider-game {
             width: min(92vw, 760px);
             display: none;
@@ -1539,6 +1246,17 @@
             padding: 0 14px 48px;
         }
 
+        .sky-scene {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 600px;
+            height: 440px;
+            z-index: 5;
+            pointer-events: none;
+        }
+
         .sky {
             position: absolute;
             top: 3%;
@@ -1671,7 +1389,7 @@
 
         .sun-1 {
             top: 4%;
-            right: 9%;
+            right: 47%;
             animation: sunFloat 8s ease-in-out infinite alternate;
         }
 
@@ -2076,6 +1794,11 @@
             pointer-events: none;
             z-index: 4;
             transform: rotate(333deg);
+            transition: opacity .3s ease-out;
+        }
+
+        .water-scene:not(.line-out) .bobber-waves {
+            opacity: 0;
         }
 
         .bw {
@@ -2135,7 +1858,7 @@
 
         .rod {
             position: absolute;
-            top: 140%;
+            top: 130%;
             left: 25%;
             width: 5px;
             height: 107%;
@@ -2184,10 +1907,16 @@
             top: 100%;
             left: calc(70.5% - 1px);
             width: 2px;
-            height: 55%;
+            height: 62%;
             background: #d6c997;
             transform-origin: top center;
+            transform: rotate(180deg);
+            transition: transform .35s ease-in-out, height .35s ease-in-out;
+        }
+
+        .water-scene.line-out .fishing-line {
             transform: rotate(152deg);
+            height: 55%;
         }
 
         .bobber {
@@ -2199,11 +1928,44 @@
             background: linear-gradient(180deg, #e95732 0 48%, #f3e7bd 49% 100%);
             border: 2px solid #10251d;
             box-shadow: 2px 2px 0 #07120d;
-            transition: transform .12s steps(3, end);
+            transition: transform .25s ease-out;
+        }
+
+        .water-scene.line-out .bobber {
+            animation: bobberIdle 4s ease-in-out infinite;
+        }
+
+        @keyframes bobberIdle {
+
+            0%,
+            50%,
+            100% {
+                transform: rotate(0deg);
+            }
+
+            25% {
+                transform: rotate(-10deg);
+            }
+
+            75% {
+                transform: rotate(10deg);
+            }
+        }
+
+        .water-scene.cast .rod {
+            animation: rodCast .9s linear;
         }
 
         .water-scene.cast .fishing-line {
-            animation: castLine .65s ease-out;
+            animation: castLine .9s linear;
+        }
+
+        .water-scene.cast .bobber-waves {
+            animation: bwCastIn .9s linear;
+        }
+
+        .water-scene.cast .bobber {
+            animation: bobberCast .9s ease-in-out;
         }
 
         .water-scene.fake-bite .bobber {
@@ -2214,15 +1976,111 @@
             animation: realBite .48s steps(4, end) infinite;
         }
 
-        @keyframes castLine {
+        @keyframes rodCast {
             0% {
-                transform: rotate(-45deg);
-                height: 4%;
+                transform: rotate(207deg);
+                animation-timing-function: ease-in-out;
+            }
+
+            25% {
+                transform: rotate(203deg);
+                animation-timing-function: ease-in-out;
+            }
+
+            55% {
+                transform: rotate(209deg);
+                animation-timing-function: ease-in-out;
+            }
+
+            75% {
+                transform: rotate(206deg);
+                animation-timing-function: ease-in-out;
             }
 
             100% {
-                transform: rotate(0deg);
-                height: 23%;
+                transform: rotate(207deg);
+            }
+        }
+
+        @keyframes castLine {
+            0% {
+                transform: rotate(180deg);
+                height: 62%;
+                animation-timing-function: ease-in;
+            }
+
+            18% {
+                transform: rotate(171deg);
+                height: 60%;
+                animation-timing-function: ease-in-out;
+            }
+
+            40% {
+                transform: rotate(160deg);
+                height: 58%;
+                animation-timing-function: cubic-bezier(.4, .1, .6, 1);
+            }
+
+            65% {
+                transform: rotate(150deg);
+                height: 57%;
+                animation-timing-function: ease-out;
+            }
+
+            80% {
+                transform: rotate(154deg);
+                height: 54%;
+                animation-timing-function: ease-in-out;
+            }
+
+            90% {
+                transform: rotate(151deg);
+                height: 56%;
+                animation-timing-function: ease-in-out;
+            }
+
+            100% {
+                transform: rotate(152deg);
+                height: 55%;
+            }
+        }
+
+        @keyframes bobberCast {
+
+            0%,
+            60% {
+                transform: rotate(0deg) scale(1);
+            }
+
+            72% {
+                transform: rotate(-8deg) scale(.88, .8);
+            }
+
+            84% {
+                transform: rotate(4deg) scale(1.06, 1.1);
+            }
+
+            100% {
+                transform: rotate(0deg) scale(1);
+            }
+        }
+
+        @keyframes bwCastIn {
+
+            0%,
+            66% {
+                opacity: 0;
+                transform: rotate(333deg) scale(1);
+            }
+
+            74% {
+                opacity: 1;
+                transform: rotate(333deg) scale(1.12);
+            }
+
+            100% {
+                opacity: 1;
+                transform: rotate(333deg) scale(1);
             }
         }
 
@@ -2341,18 +2199,21 @@
             position: absolute;
             left: 50%;
             top: 50%;
-            width: 42px;
-            height: 28px;
+            width: 83px;
+            height: 62px;
             transform: translate(-50%, -50%);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-family: system-ui, sans-serif;
-            font-size: 27px;
-            line-height: 1;
             filter: drop-shadow(2px 2px 0 #07120d);
             z-index: 6;
             pointer-events: none;
+        }
+
+        #fish-marker img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
         }
 
         /* [1] Увеличенная высота */
@@ -2484,10 +2345,13 @@
         }
 
         .catch-modal-fish {
-            font-family: system-ui, sans-serif;
-            font-size: 56px;
-            line-height: 1.2;
             filter: drop-shadow(3px 3px 0 #07120d);
+        }
+
+        .catch-modal-fish img {
+            width: 64px;
+            height: 64px;
+            object-fit: contain;
         }
 
         #catch-modal-title {
@@ -2527,7 +2391,6 @@
 
         .catch-modal-actions button {
             width: 100%;
-            min-height: 48px;
             padding: 10px;
             font-family: "Press Start 2P", system-ui;
             font-size: 9px;
@@ -2544,6 +2407,48 @@
         .catch-modal-actions button.secondary {
             background: #17221c;
             color: #f3e7bd;
+        }
+
+        #catch-modal-again {
+            padding: 8px 34px;
+            font-size: 10px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            font-weight: 900;
+            background: #10251d;
+            color: #e7d79e;
+            border: 0;
+            box-shadow: none;
+            transition:
+                background-color .12s steps(2, end),
+                color .12s steps(2, end),
+                border-color .12s steps(2, end),
+                transform .08s steps(2, end),
+                box-shadow .08s steps(2, end),
+                filter .12s steps(2, end);
+        }
+
+        @media (hover: hover) and (pointer: fine) {
+            #catch-modal-again:not(:disabled):hover {
+                color: #fff5cf;
+                background: #173429;
+                transform: translate(-1px, -1px);
+                box-shadow: 4px 4px 0 #07120d;
+            }
+        }
+
+        #catch-modal-again:not(:disabled):active {
+            transform: translate(2px, 2px);
+            box-shadow: none;
+            background: #0b1b14;
+            color: #f3e7bd;
+        }
+
+        @media (hover: none) and (pointer: coarse) {
+            #catch-modal-again:not(:disabled):active {
+                transform: translate(2px, 2px) scale(.98);
+                box-shadow: none;
+            }
         }
 
         .debug-label {
@@ -2608,8 +2513,8 @@
         </section>
 
         <section id="input-zone">
-            <div id="water-scene" class="water-scene" aria-hidden="true">
-                <div class="sky" aria-hidden="true">
+            <div class="sky-scene" aria-hidden="true">
+                <div class="sky">
                     <div class="sun sun-1" aria-hidden="true">
                         <div class="sun-ray-row">
                             <div class="sun-line-short"></div>
@@ -2645,7 +2550,9 @@
                         <div class="cloud-line cl-short"></div>
                     </div>
                 </div>
+            </div>
 
+            <div id="water-scene" class="water-scene" aria-hidden="true">
                 <div class="wave wave-1" aria-hidden="true">
                     ~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~
                 </div>
@@ -2676,7 +2583,8 @@
                         <div id="slider-time-left-fill"></div>
                     </div>
                     <div id="slider-track" aria-label="Вертикальная шкала вываживания">
-                        <div id="fish-marker" aria-hidden="true">🐟</div>
+                        <div id="fish-marker" aria-hidden="true"><img id="fish-marker-img" src="assets/0.png" alt="">
+                        </div>
                         <div id="slider-knob"></div>
                     </div>
                     <div id="slider-timer" role="progressbar" aria-label="Прогресс поимки" aria-valuemin="0"
@@ -2692,14 +2600,15 @@
         <div id="catch-modal" class="catch-modal" role="dialog" aria-modal="true" aria-labelledby="catch-modal-title"
             hidden>
             <div class="catch-modal-card">
-                <div class="catch-modal-fish" aria-hidden="true">🐟</div>
+                <div class="catch-modal-fish" aria-hidden="true"><img id="catch-fish-img" src="assets/0.png" alt="">
+                </div>
                 <h2 id="catch-modal-title">УЛОВ!</h2>
                 <div id="catch-modal-name">Рыба</div>
                 <div id="catch-modal-weight">0,00 кг</div>
                 <div class="catch-modal-note">ПОЙМАННАЯ РЫБА СОХРАНЕНА</div>
                 <div class="catch-modal-actions">
-                    <button id="catch-modal-close" class="secondary" type="button">ПОНЯТНО</button>
-                    <button id="catch-modal-again" type="button">РЫБАЧИТЬ СНОВА</button>
+                    <button id="catch-modal-close" class="secondary" type="button">В САДОЧЕК</button>
+                    <button id="catch-modal-again" type="button">Ловить еще (-1⚡️)</button>
                 </div>
             </div>
         </div>
@@ -2756,6 +2665,7 @@
             water: document.getElementById('water-scene'), bobber: document.getElementById('bobber'),
             slider: document.getElementById('slider-game'), track: document.getElementById('slider-track'),
             knob: document.getElementById('slider-knob'), fish: document.getElementById('fish-marker'),
+            fishImg: document.getElementById('fish-marker-img'), catchFishImg: document.getElementById('catch-fish-img'),
             progress: document.getElementById('slider-timer-fill'), progressTrack: document.getElementById('slider-timer'),
             timeLeft: document.getElementById('slider-time-left-fill'), timeLeftTrack: document.getElementById('slider-time-left'),
             catchModal: document.getElementById('catch-modal'), catchModalName: document.getElementById('catch-modal-name'),
@@ -2778,6 +2688,17 @@
 
         if (DEBUG_MODE) {
             els.debugLabel.hidden = false;
+        }
+
+        function fishImageUrl(fishId) {
+            if (DEBUG_MODE) return 'assets/0.png';
+            return `assets/${encodeURIComponent(fishId)}.png`;
+        }
+
+        function setFishImages(fishId) {
+            const url = fishImageUrl(fishId);
+            els.fishImg.src = url;
+            els.catchFishImg.src = url;
         }
 
         function apiRequest(path, options = {}) {
@@ -2859,12 +2780,28 @@
             }
         }
 
+        function startSplashAnimation(duration = 0) {
+            stopSplashAnimation();
+            if (!els.upperWave) return;
+            let splashOn = false;
+            const calmText = '~-~-~-~-~';
+            const splashText = '~\\~|~\\~|~/~-~';
+            state.splashInterval = setInterval(() => {
+                if (!duration && state.phase !== 'real-bite' && state.phase !== 'playing') {
+                    stopSplashAnimation();
+                    return;
+                }
+                splashOn = !splashOn;
+                els.upperWave.textContent = splashOn ? splashText : calmText;
+            }, 220);
+            if (duration) schedule(() => stopSplashAnimation(), duration);
+        }
+
         function resetSingleScreen(message = 'Забрось удочку и жди поклёвку.') {
             clearTimers();
             stopSplashAnimation();
             state.phase = 'idle'; state.holding = false; state.progress = 0;
-            els.water.hidden = false;
-            els.water.classList.remove('cast', 'fake-bite', 'real-bite');
+            els.water.classList.remove('cast', 'fake-bite', 'real-bite', 'line-out');
             els.slider.classList.remove('visible');
             els.progress.style.height = '0%';
             els.timeLeft.style.height = '100%';
@@ -2902,10 +2839,15 @@
             els.status.textContent = 'Готовим снасти…';
             try {
                 await createFishingSession();
+                setFishImages(state.fishData.fish_id);
                 state.phase = 'casting';
                 els.water.classList.remove('fake-bite', 'real-bite');
-                els.water.classList.add('cast');
+                els.water.classList.add('cast', 'line-out');
                 els.status.textContent = 'Забрасываем удочку…';
+                schedule(() => {
+                    if (state.phase !== 'casting') return;
+                    startSplashAnimation(800);
+                }, 620);
                 schedule(() => {
                     if (state.phase !== 'casting') return;
                     state.phase = 'waiting';
@@ -2914,7 +2856,7 @@
                     els.status.textContent = '';
                     state.sessionNonce += 1;
                     scheduleNextBite(state.sessionNonce, 0);
-                }, 700);
+                }, 950);
             } catch (error) {
                 console.error('[fishing] start failed', error);
                 state.phase = 'idle';
@@ -2937,7 +2879,6 @@
                     els.water.classList.add('fake-bite');
                     vibrate('short');
                     els.title.textContent = '';
-                    showNotification('РАНО', '#d6c997', 480);
                     els.status.textContent = '';
                     schedule(() => {
                         if (state.phase !== 'fake-bite' || nonce !== state.sessionNonce) return;
@@ -2957,19 +2898,7 @@
                 els.status.textContent = '';
 
                 // Запуск анимации всплесков верхней волны
-                if (els.upperWave) {
-                    let splashOn = false;
-                    const calmText = '~-~-~-~-~';
-                    const splashText = '~\\~|~\\~|~/~-~';
-                    state.splashInterval = setInterval(() => {
-                        if (state.phase !== 'real-bite' && state.phase !== 'playing') {
-                            stopSplashAnimation();
-                            return;
-                        }
-                        splashOn = !splashOn;
-                        els.upperWave.textContent = splashOn ? splashText : calmText;
-                    }, 220);
-                }
+                startSplashAnimation();
 
                 schedule(() => {
                     if (state.phase !== 'real-bite') return;
@@ -2984,13 +2913,11 @@
                 state.fakeHookAttempted = true;
                 vibrate('short');
                 els.button.hidden = false;
-                showNotification('РАНО!', '#e95732', 700);
                 finishFishing('escaped', 0, 'СОРВАЛАСЬ!', 'Слишком рано подсёк! Рыба сорвалась.');
                 return;
             }
             if (state.phase !== 'real-bite') return;
             clearTimers();
-            stopSplashAnimation();
             vibrate('short');
             state.phase = 'playing';
             state.holding = false;
@@ -3003,7 +2930,6 @@
             state.sliderStartedAt = performance.now();
             els.title.textContent = '';
             els.status.textContent = '';
-            els.water.hidden = true;
             els.slider.classList.add('visible');
             els.progress.style.height = '0%';
             els.timeLeft.style.height = '100%';
@@ -3075,13 +3001,13 @@
             els.catchModalName.textContent = fish.fish_name || 'Неизвестная рыба';
             els.catchModalWeight.textContent = `${weight} кг`;
             els.catchModal.hidden = false;
-            els.catchModalClose.focus();
         }
 
         async function finishFishing(result, elapsedMs, message, customStatus) {
             if (['caught', 'escaped', 'saving'].includes(state.phase)) return;
             clearTimers();
             stopSplashAnimation();
+            els.water.classList.remove('cast', 'fake-bite', 'real-bite');
             state.holding = false;
             state.phase = 'saving';
             const fish = state.fishData || DEBUG_FISH;
@@ -3101,11 +3027,10 @@
                 return;
             }
             state.phase = result;
-            els.water.hidden = true;
             els.title.textContent = message;
             if (result === 'caught') {
                 els.status.textContent = `${fish.fish_name} · ${Number(fish.fish_weight_kg).toFixed(2)} кг`;
-                els.fish.textContent = '🐟';
+                setFishImages(fish.fish_id);
                 els.progress.classList.remove('warn');
                 vibrate('short');
                 showNotification(`${fish.fish_name} · ${Number(fish.fish_weight_kg).toFixed(2)} КГ`, '#63b85b', 1400);
@@ -3142,6 +3067,12 @@
             event.stopPropagation();
             if (state.phase !== 'idle') return;
             void startFishing();
+        });
+
+        [els.fishImg, els.catchFishImg].forEach(img => {
+            img.addEventListener('error', () => {
+                if (!img.src.endsWith('assets/0.png')) img.src = 'assets/0.png';
+            });
         });
 
         els.game.addEventListener('click', event => {
