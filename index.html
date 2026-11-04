@@ -1794,7 +1794,6 @@
             pointer-events: none;
             z-index: 4;
             transform: rotate(333deg);
-            transition: opacity .3s ease-out;
         }
 
         .water-scene:not(.line-out) .bobber-waves {
@@ -1961,7 +1960,7 @@
         }
 
         .water-scene.cast .bobber-waves {
-            animation: bwCastIn .9s linear;
+            opacity: 0;
         }
 
         .water-scene.cast .bobber {
@@ -2062,25 +2061,6 @@
 
             100% {
                 transform: rotate(0deg) scale(1);
-            }
-        }
-
-        @keyframes bwCastIn {
-
-            0%,
-            66% {
-                opacity: 0;
-                transform: rotate(333deg) scale(1);
-            }
-
-            74% {
-                opacity: 1;
-                transform: rotate(333deg) scale(1.12);
-            }
-
-            100% {
-                opacity: 1;
-                transform: rotate(333deg) scale(1);
             }
         }
 
@@ -2683,7 +2663,7 @@
             phase: 'idle', battle: null, fishData: null, timers: [], loopId: null, holding: false,
             knobPosition: 0.04, fishPosition: 0.52, fishDirection: 1, nextFishTurn: 0,
             progress: 0, lastFrame: 0, sliderStartedAt: 0, sessionNonce: 0, fakeHookAttempted: false, suppressClickUntil: 0,
-            splashInterval: null
+            splashInterval: null, soundEnabled: true, audio: null, nextVibe: 0
         };
 
         if (DEBUG_MODE) {
@@ -2747,6 +2727,118 @@
                     console.warn('[vibrate] navigator.vibrate failed:', e);
                 }
             }
+        }
+
+        function initAudio() {
+            if (state.audio) return;
+            try { state.audio = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { }
+        }
+
+        function ensureAudio() {
+            initAudio();
+            if (state.audio && state.audio.state === 'suspended') void state.audio.resume();
+        }
+
+        function tone(freq, dur = .06, type = 'sine', gain = .035, delay = 0) {
+            if (!state.audio || !state.soundEnabled) return;
+            const now = state.audio.currentTime + delay;
+            const o = state.audio.createOscillator(), g = state.audio.createGain();
+            o.type = type; o.frequency.setValueAtTime(freq, now);
+            g.gain.setValueAtTime(gain, now); g.gain.exponentialRampToValueAtTime(.001, now + dur);
+            o.connect(g); g.connect(state.audio.destination);
+            o.start(now); o.stop(now + dur + .02);
+        }
+
+        function hapticPattern(pattern) {
+            if (DEBUG_MODE || typeof navigator.vibrate !== 'function') return;
+            navigator.vibrate(pattern);
+        }
+
+        function pulseVibrate(prox) {
+            if (DEBUG_MODE) return;
+            const ms = Math.round(6 + 28 * prox);
+            if (typeof navigator.vibrate === 'function') navigator.vibrate(ms);
+            if (tg?.HapticFeedback) {
+                try { tg.HapticFeedback.impactOccurred(prox > .66 ? 'heavy' : prox > .33 ? 'medium' : 'light'); } catch (e) { }
+            }
+        }
+
+        function castSound() {
+            if (!state.audio || !state.soundEnabled) return;
+            const now = state.audio.currentTime;
+            const osc = state.audio.createOscillator(), gain = state.audio.createGain();
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(240, now);
+            osc.frequency.exponentialRampToValueAtTime(720, now + .18);
+            osc.frequency.exponentialRampToValueAtTime(320, now + .4);
+            gain.gain.setValueAtTime(.0001, now);
+            gain.gain.exponentialRampToValueAtTime(.05, now + .05);
+            gain.gain.exponentialRampToValueAtTime(.001, now + .45);
+            osc.connect(gain); gain.connect(state.audio.destination);
+            osc.start(now); osc.stop(now + .5);
+
+            const plop = state.audio.createOscillator(), plopGain = state.audio.createGain();
+            plop.type = 'sine';
+            plop.frequency.setValueAtTime(300, now + .88);
+            plop.frequency.exponentialRampToValueAtTime(70, now + .98);
+            plopGain.gain.setValueAtTime(.0001, now + .88);
+            plopGain.gain.exponentialRampToValueAtTime(.07, now + .9);
+            plopGain.gain.exponentialRampToValueAtTime(.001, now + 1.05);
+            plop.connect(plopGain); plopGain.connect(state.audio.destination);
+            plop.start(now + .88); plop.stop(now + 1.1);
+        }
+
+        function biteSound(fake = false) {
+            if (fake) {
+                tone(420, .05, 'square', .025);
+                return;
+            }
+            tone(560, .07, 'square', .05);
+            tone(760, .09, 'square', .05, .09);
+            tone(980, .12, 'triangle', .04, .2);
+        }
+
+        function catchSound() {
+            if (!state.audio || !state.soundEnabled) return;
+            const now = state.audio.currentTime;
+            const notes = [
+                { freq: 523.25, start: 0.00, dur: 0.12 },
+                { freq: 659.25, start: 0.10, dur: 0.12 },
+                { freq: 783.99, start: 0.20, dur: 0.12 },
+                { freq: 1046.50, start: 0.30, dur: 0.18 },
+                { freq: 1318.51, start: 0.45, dur: 0.35 }
+            ];
+            notes.forEach(note => {
+                const t = now + note.start;
+                const osc1 = state.audio.createOscillator(), gain1 = state.audio.createGain();
+                osc1.type = 'square';
+                osc1.frequency.setValueAtTime(note.freq, t);
+                gain1.gain.setValueAtTime(0.0001, t);
+                gain1.gain.exponentialRampToValueAtTime(0.06, t + 0.01);
+                gain1.gain.exponentialRampToValueAtTime(0.001, t + note.dur);
+                osc1.connect(gain1); gain1.connect(state.audio.destination);
+                osc1.start(t); osc1.stop(t + note.dur + 0.02);
+
+                const osc2 = state.audio.createOscillator(), gain2 = state.audio.createGain();
+                osc2.type = 'triangle';
+                osc2.frequency.setValueAtTime(note.freq * 2, t);
+                gain2.gain.setValueAtTime(0.0001, t);
+                gain2.gain.exponentialRampToValueAtTime(0.03, t + 0.01);
+                gain2.gain.exponentialRampToValueAtTime(0.001, t + note.dur);
+                osc2.connect(gain2); gain2.connect(state.audio.destination);
+                osc2.start(t); osc2.stop(t + note.dur + 0.02);
+            });
+
+            const bass = state.audio.createOscillator(), bassGain = state.audio.createGain();
+            bass.type = 'sawtooth';
+            bass.frequency.setValueAtTime(130.81, now + 0.45);
+            bassGain.gain.setValueAtTime(0.0001, now + 0.45);
+            bassGain.gain.exponentialRampToValueAtTime(0.05, now + 0.48);
+            bassGain.gain.exponentialRampToValueAtTime(0.001, now + 0.85);
+            bass.connect(bassGain); bassGain.connect(state.audio.destination);
+            bass.start(now + 0.45); bass.stop(now + 0.90);
+
+            hapticPattern([20, 15, 20, 15, 40]);
         }
 
         function showNotification(text, color = '#f3e7bd', duration = 850) {
@@ -2844,16 +2936,15 @@
                 els.water.classList.remove('fake-bite', 'real-bite');
                 els.water.classList.add('cast', 'line-out');
                 els.status.textContent = 'Забрасываем удочку…';
-                schedule(() => {
-                    if (state.phase !== 'casting') return;
-                    startSplashAnimation(800);
-                }, 620);
+                ensureAudio();
+                castSound();
                 schedule(() => {
                     if (state.phase !== 'casting') return;
                     state.phase = 'waiting';
                     els.water.classList.remove('cast');
                     els.title.textContent = '';
                     els.status.textContent = '';
+                    startSplashAnimation(800);
                     state.sessionNonce += 1;
                     scheduleNextBite(state.sessionNonce, 0);
                 }, 950);
@@ -2878,6 +2969,7 @@
                     void els.water.offsetWidth;
                     els.water.classList.add('fake-bite');
                     vibrate('short');
+                    biteSound(true);
                     els.title.textContent = '';
                     els.status.textContent = '';
                     schedule(() => {
@@ -2894,6 +2986,7 @@
                 els.water.classList.remove('fake-bite');
                 els.water.classList.add('real-bite');
                 vibrate('long');
+                biteSound(false);
                 els.title.textContent = '';
                 els.status.textContent = '';
 
@@ -2927,6 +3020,7 @@
             state.fishDirection = Math.random() < 0.5 ? -1 : 1;
             state.nextFishTurn = 0.55;
             state.lastFrame = 0;
+            state.nextVibe = 0;
             state.sliderStartedAt = performance.now();
             els.title.textContent = '';
             els.status.textContent = '';
@@ -2976,6 +3070,19 @@
             els.progressTrack.setAttribute('aria-valuenow', String(Math.round(state.progress * 100)));
             els.progress.classList.toggle('warn', !aligned && state.progress < 0.2);
             renderSliderPositions();
+
+            state.nextVibe -= dt;
+            if (state.nextVibe <= 0) {
+                const dist = Math.abs(state.knobPosition - state.fishPosition);
+                const range = (config.catch_window || 0.1) * 2;
+                if (dist <= range) {
+                    const prox = 1 - dist / range;
+                    pulseVibrate(prox);
+                    state.nextVibe = 0.18 - 0.1 * prox;
+                } else {
+                    state.nextVibe = 0.06;
+                }
+            }
 
             const elapsed = performance.now() - state.sliderStartedAt;
             const maxDurationMs = Math.max(1, Number(config.max_duration_seconds) || 24) * 1000;
@@ -3033,6 +3140,7 @@
                 setFishImages(fish.fish_id);
                 els.progress.classList.remove('warn');
                 vibrate('short');
+                catchSound();
                 showNotification(`${fish.fish_name} · ${Number(fish.fish_weight_kg).toFixed(2)} КГ`, '#63b85b', 1400);
                 showCatchModal(fish);
             } else {
@@ -3067,6 +3175,10 @@
             event.stopPropagation();
             if (state.phase !== 'idle') return;
             void startFishing();
+        });
+
+        ['pointerdown', 'keydown'].forEach(type => {
+            document.addEventListener(type, ensureAudio, { passive: true });
         });
 
         [els.fishImg, els.catchFishImg].forEach(img => {
