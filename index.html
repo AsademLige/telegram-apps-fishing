@@ -2340,6 +2340,123 @@
             font-size: 20px;
             line-height: 1.6;
             letter-spacing: 3px;
+            transform-origin: center center;
+        }
+
+        #catch-modal-title.celebrate {
+            animation: victoryCelebrate 1.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        @keyframes victoryCelebrate {
+            0% {
+                transform: scale(0.3) rotate(-15deg);
+                opacity: 0;
+            }
+
+            25% {
+                transform: scale(1.35) rotate(4deg);
+                opacity: 1;
+            }
+
+            40% {
+                transform: scale(0.95) rotate(-3deg);
+            }
+
+            55% {
+                transform: scale(1.15) rotate(2deg);
+            }
+
+            70% {
+                transform: scale(0.98) rotate(-1deg);
+            }
+
+            85% {
+                transform: scale(1.05) rotate(0.5deg);
+            }
+
+            100% {
+                transform: scale(1) rotate(0deg);
+                opacity: 1;
+            }
+        }
+
+        .catch-pop-target {
+            opacity: 0;
+        }
+
+        .catch-pop-target.catch-pop {
+            animation: rewardSlideIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        }
+
+        .catch-modal-fish.catch-pop-target.catch-pop {
+            animation: rewardSlideInMain 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        }
+
+        .catch-modal-fish.catch-pop img {
+            animation: coinSpin 0.6s ease-out;
+        }
+
+        @keyframes rewardSlideIn {
+            0% {
+                opacity: 0;
+                transform: translateX(-20px);
+                filter: brightness(0.5);
+            }
+
+            50% {
+                opacity: 1;
+                transform: translateX(4px);
+                filter: brightness(1.3);
+            }
+
+            100% {
+                opacity: 1;
+                transform: translateX(0);
+                filter: brightness(1);
+            }
+        }
+
+        @keyframes rewardSlideInMain {
+            0% {
+                opacity: 0;
+                transform: translateX(-24px) scale(0.9);
+                filter: brightness(0.5);
+            }
+
+            40% {
+                opacity: 1;
+                transform: translateX(4px) scale(1.04);
+                filter: brightness(1.4);
+            }
+
+            70% {
+                transform: translateX(-2px) scale(0.99);
+                filter: brightness(1.1);
+            }
+
+            100% {
+                opacity: 1;
+                transform: translateX(0) scale(1);
+                filter: brightness(1);
+            }
+        }
+
+        @keyframes coinSpin {
+            0% {
+                transform: rotateY(0deg) scale(1);
+            }
+
+            30% {
+                transform: rotateY(180deg) scale(1.25);
+            }
+
+            60% {
+                transform: rotateY(360deg) scale(1.1);
+            }
+
+            100% {
+                transform: rotateY(540deg) scale(1);
+            }
         }
 
         #catch-modal-name {
@@ -2563,7 +2680,8 @@
                         <div id="slider-time-left-fill"></div>
                     </div>
                     <div id="slider-track" aria-label="Вертикальная шкала вываживания">
-                        <div id="fish-marker" aria-hidden="true"><img id="fish-marker-img" src="assets/0.png" alt="">
+                        <div id="fish-marker" aria-hidden="true"><img id="fish-marker-img" src="assets/default.png"
+                                alt="">
                         </div>
                         <div id="slider-knob"></div>
                     </div>
@@ -2580,12 +2698,12 @@
         <div id="catch-modal" class="catch-modal" role="dialog" aria-modal="true" aria-labelledby="catch-modal-title"
             hidden>
             <div class="catch-modal-card">
-                <div class="catch-modal-fish" aria-hidden="true"><img id="catch-fish-img" src="assets/0.png" alt="">
+                <div class="catch-modal-fish catch-pop-target" aria-hidden="true"><img id="catch-fish-img"
+                        src="assets/default.png" alt="">
                 </div>
                 <h2 id="catch-modal-title">УЛОВ!</h2>
-                <div id="catch-modal-name">Рыба</div>
-                <div id="catch-modal-weight">0,00 кг</div>
-                <div class="catch-modal-note">ПОЙМАННАЯ РЫБА СОХРАНЕНА</div>
+                <div id="catch-modal-name" class="catch-pop-target">Рыба</div>
+                <div id="catch-modal-weight" class="catch-pop-target">0,00 кг</div>
                 <div class="catch-modal-actions">
                     <button id="catch-modal-close" class="secondary" type="button">В САДОЧЕК</button>
                     <button id="catch-modal-again" type="button">Ловить еще (-1⚡️)</button>
@@ -2602,8 +2720,12 @@
         const DEBUG_MODE = Boolean(window.FISHING_DEBUG_BOOT);
         const tg = DEBUG_MODE ? null : (window.Telegram?.WebApp || null);
         if (!DEBUG_MODE && tg) { tg.ready(); tg.expand(); }
+        const startParamChatId = (() => {
+            const parsed = Number.parseInt(tg?.initDataUnsafe?.start_param || '', 10);
+            return Number.isSafeInteger(parsed) ? parsed : null;
+        })();
 
-        window.BATTLE_API_URL = window.BATTLE_API_URL || 'https://jesterapi.ddns.net';
+        window.API_URL = window.API_URL || 'https://jesterapi.ddns.net';
 
         async function loadEnvConfig() {
             try {
@@ -2612,10 +2734,10 @@
                     const text = await response.text();
                     const lines = text.split('\n');
                     for (const line of lines) {
-                        const match = line.match(/^\s*BATTLE_API_URL\s*=\s*(.+?)\s*$/);
+                        const match = line.match(/^\s*API_URL\s*=\s*(.+?)\s*$/);
                         if (match) {
-                            window.BATTLE_API_URL = match[1].replace(/^["']|["']$/g, '');
-                            console.log("✅ BATTLE_API_URL загружен из .env:", window.BATTLE_API_URL);
+                            window.API_URL = match[1].replace(/^["']|["']$/g, '');
+                            console.log("✅ API_URL загружен из .env:", window.API_URL);
                             break;
                         }
                     }
@@ -2623,12 +2745,12 @@
             } catch (error) {
                 console.warn("⚠️ Файл .env не найден. Используется значение по умолчанию.");
             } finally {
-                if (window.BATTLE_API_URL) {
-                    window.BATTLE_API_URL = window.BATTLE_API_URL.replace(/\/$/, "");
+                if (window.API_URL) {
+                    window.API_URL = window.API_URL.replace(/\/$/, "");
                 }
             }
         }
-        loadEnvConfig();
+        const envConfigReady = loadEnvConfig();
 
         const initData = DEBUG_MODE ? '' : (tg?.initData || '');
         const DEBUG_FISH = Object.freeze({
@@ -2663,28 +2785,74 @@
             phase: 'idle', battle: null, fishData: null, timers: [], loopId: null, holding: false,
             knobPosition: 0.04, fishPosition: 0.52, fishDirection: 1, nextFishTurn: 0,
             progress: 0, lastFrame: 0, sliderStartedAt: 0, sessionNonce: 0, fakeHookAttempted: false, suppressClickUntil: 0,
-            splashInterval: null, soundEnabled: true, audio: null, nextVibe: 0
+            splashInterval: null, soundEnabled: true, audio: null, nextVibe: 0, sessionPromise: null,
+            playerName: null, energy: null
         };
 
         if (DEBUG_MODE) {
             els.debugLabel.hidden = false;
         }
 
+        const badFishAssets = new Set();
+
         function fishImageUrl(fishId) {
-            if (DEBUG_MODE) return 'assets/0.png';
+            if (DEBUG_MODE || badFishAssets.has(String(fishId))) return 'assets/default.png';
             return `assets/${encodeURIComponent(fishId)}.png`;
         }
 
         function setFishImages(fishId) {
             const url = fishImageUrl(fishId);
-            els.fishImg.src = url;
+            els.fishImg.dataset.fishId = String(fishId);
+            els.catchFishImg.dataset.fishId = String(fishId);
+            // els.fishImg.src = url;
             els.catchFishImg.src = url;
         }
+
+        function renderPlayerHeader() {
+            if (state.playerName) els.player.textContent = state.playerName;
+            if (state.energy !== null) {
+                els.session.innerHTML = `<span class="energy-value">${state.energy}</span>` +
+                    (state.energy <= 0 ? '<span class="energy-warning">НЕТ ЭНЕРГИИ</span>' : '');
+                els.session.classList.toggle('zero', state.energy <= 0);
+            }
+        }
+
+        function setPlayerInfo(user) {
+            if (!user) return;
+            if (user.user_name) state.playerName = user.user_name;
+            const energyNum = Number(user.energy);
+            if (Number.isFinite(energyNum)) state.energy = energyNum;
+            renderPlayerHeader();
+        }
+
+        function initPlayerHeader() {
+            if (DEBUG_MODE) {
+                state.playerName = 'ПИОНЕР';
+                state.energy = 5;
+                renderPlayerHeader();
+                return;
+            }
+            const tu = tg?.initDataUnsafe?.user;
+            if (tu) {
+                state.playerName = [tu.first_name, tu.last_name].filter(Boolean).join(' ') || tu.username || '';
+                renderPlayerHeader();
+            }
+        }
+
+        function fetchPlayerInfo() {
+            if (DEBUG_MODE) return;
+            envConfigReady.then(() => apiRequest('/battle', { method: 'GET' }))
+                .then(payload => setPlayerInfo(payload.user))
+                .catch(error => console.warn('[fishing] player info failed', error));
+        }
+
+        initPlayerHeader();
+        fetchPlayerInfo();
 
         function apiRequest(path, options = {}) {
             if (DEBUG_MODE) throw new Error('API is disabled in debug mode');
             if (!initData) throw new Error('Откройте игру внутри Telegram WebApp: initData отсутствует. Для автономного теста добавьте ?debug=1.');
-            return fetch(`${window.BATTLE_API_URL}${path}`, {
+            return fetch(`${window.API_URL}${path}`, {
                 ...options,
                 headers: { 'Content-Type': 'application/json', 'X-Init-Data': initData, ...(options.headers || {}) }
             }).then(async response => {
@@ -2788,14 +2956,70 @@
             plop.start(now + .88); plop.stop(now + 1.1);
         }
 
-        function biteSound(fake = false) {
-            if (fake) {
-                tone(420, .05, 'square', .025);
-                return;
+        function coinSound(main = false) {
+            if (!state.audio || !state.soundEnabled) return;
+            const now = state.audio.currentTime;
+
+            const baseFreq = main ? 1600 : 2200;
+            const volume = main ? 0.07 : 0.045;
+
+            const osc1 = state.audio.createOscillator();
+            const gain1 = state.audio.createGain();
+            osc1.type = "triangle";
+            osc1.frequency.setValueAtTime(baseFreq, now);
+            osc1.frequency.exponentialRampToValueAtTime(baseFreq * 0.85, now + 0.08);
+            gain1.gain.setValueAtTime(0.0001, now);
+            gain1.gain.exponentialRampToValueAtTime(volume, now + 0.005);
+            gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
+            osc1.connect(gain1); gain1.connect(state.audio.destination);
+            osc1.start(now); osc1.stop(now + 0.18);
+
+            const osc2 = state.audio.createOscillator();
+            const gain2 = state.audio.createGain();
+            osc2.type = "sine";
+            osc2.frequency.setValueAtTime(baseFreq * 2.4, now);
+            osc2.frequency.exponentialRampToValueAtTime(baseFreq * 1.8, now + 0.06);
+            gain2.gain.setValueAtTime(0.0001, now);
+            gain2.gain.exponentialRampToValueAtTime(volume * 0.4, now + 0.003);
+            gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
+            osc2.connect(gain2); gain2.connect(state.audio.destination);
+            osc2.start(now); osc2.stop(now + 0.12);
+
+            const osc3 = state.audio.createOscillator();
+            const gain3 = state.audio.createGain();
+            osc3.type = "square";
+            osc3.frequency.setValueAtTime(baseFreq * 0.5, now);
+            gain3.gain.setValueAtTime(0.0001, now);
+            gain3.gain.exponentialRampToValueAtTime(volume * 0.15, now + 0.002);
+            gain3.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+            osc3.connect(gain3); gain3.connect(state.audio.destination);
+            osc3.start(now); osc3.stop(now + 0.07);
+
+            if (main) {
+                hapticPattern([8, 4, 8]);
+            } else {
+                hapticPattern(5);
             }
-            tone(560, .07, 'square', .05);
-            tone(760, .09, 'square', .05, .09);
-            tone(980, .12, 'triangle', .04, .2);
+        }
+
+        function biteBlip() {
+            tone(420, .05, 'square', .025);
+        }
+
+        function fakeBiteSound() {
+            const count = 1 + Math.floor(Math.random() * 3);
+            for (let i = 0; i < count; i++) {
+                schedule(() => {
+                    if (state.phase === 'fake-bite') biteBlip();
+                }, i * 170);
+            }
+        }
+
+        function realBiteSound() {
+            biteBlip();
+            schedule(() => {
+                if (state.phase === 'real-bite') realBiteSound();
+            }, 170);
         }
 
         function catchSound() {
@@ -2912,9 +3136,13 @@
                 state.fishData = { ...DEBUG_FISH, fishing_config: { ...DEBUG_FISH.fishing_config } };
                 return;
             }
-            const payload = await apiRequest('/fishing/start', { method: 'POST', body: JSON.stringify({}) });
+            const payload = await apiRequest('/fishing/start', {
+                method: 'POST',
+                body: JSON.stringify(startParamChatId !== null ? { chat_id: startParamChatId } : {})
+            });
             if (!payload.battle?.data || payload.battle.data.game_mode !== 'fishing') throw new Error('API не вернул рыболовную битву');
             state.battle = payload.battle;
+            setPlayerInfo(payload.user);
             state.fishData = {
                 fish_id: payload.battle.data.fish_id,
                 fish_name: payload.battle.data.fish_name,
@@ -2923,38 +3151,42 @@
             };
         }
 
-        async function startFishing() {
+        function startFishing() {
             if (state.phase !== 'idle') return;
             els.button.hidden = true;
-            state.phase = 'creating';
+            state.phase = 'casting';
             els.title.textContent = 'ТИХАЯ ЗАВОДЬ';
-            els.status.textContent = 'Готовим снасти…';
-            try {
-                await createFishingSession();
-                setFishImages(state.fishData.fish_id);
-                state.phase = 'casting';
-                els.water.classList.remove('fake-bite', 'real-bite');
-                els.water.classList.add('cast', 'line-out');
-                els.status.textContent = 'Забрасываем удочку…';
-                ensureAudio();
-                castSound();
-                schedule(() => {
-                    if (state.phase !== 'casting') return;
-                    state.phase = 'waiting';
-                    els.water.classList.remove('cast');
-                    els.title.textContent = '';
-                    els.status.textContent = '';
-                    startSplashAnimation(800);
+            els.status.textContent = '';
+            els.water.classList.remove('fake-bite', 'real-bite');
+            els.water.classList.add('cast', 'line-out');
+            ensureAudio();
+            castSound();
+            state.sessionPromise = createFishingSession()
+                .then(() => {
+                    if (state.fishData) setFishImages(state.fishData.fish_id);
+                })
+                .catch(error => {
+                    console.error('[fishing] start failed', error);
+                    clearTimers();
+                    stopSplashAnimation();
                     state.sessionNonce += 1;
-                    scheduleNextBite(state.sessionNonce, 0);
-                }, 950);
-            } catch (error) {
-                console.error('[fishing] start failed', error);
-                state.phase = 'idle';
-                els.status.textContent = error.message || 'Не удалось начать рыбалку.';
-                els.button.hidden = false;
-                els.button.textContent = 'РЫБАЧИТЬ';
-            }
+                    els.water.classList.remove('cast', 'fake-bite', 'real-bite', 'line-out');
+                    state.phase = 'idle';
+                    els.title.textContent = '';
+                    els.status.textContent = error.message || 'Не удалось начать рыбалку.';
+                    els.button.hidden = false;
+                    els.button.textContent = 'РЫБАЧИТЬ';
+                });
+            schedule(() => {
+                if (state.phase !== 'casting') return;
+                state.phase = 'waiting';
+                els.water.classList.remove('cast');
+                els.title.textContent = '';
+                els.status.textContent = '';
+                startSplashAnimation(800);
+                state.sessionNonce += 1;
+                scheduleNextBite(state.sessionNonce, 0);
+            }, 950);
         }
 
         function scheduleNextBite(nonce, fakeCount) {
@@ -2969,7 +3201,7 @@
                     void els.water.offsetWidth;
                     els.water.classList.add('fake-bite');
                     vibrate('short');
-                    biteSound(true);
+                    fakeBiteSound();
                     els.title.textContent = '';
                     els.status.textContent = '';
                     schedule(() => {
@@ -2986,7 +3218,7 @@
                 els.water.classList.remove('fake-bite');
                 els.water.classList.add('real-bite');
                 vibrate('long');
-                biteSound(false);
+                realBiteSound();
                 els.title.textContent = '';
                 els.status.textContent = '';
 
@@ -3047,7 +3279,7 @@
             if (!state.lastFrame) state.lastFrame = now;
             const dt = Math.min(0.05, (now - state.lastFrame) / 1000);
             state.lastFrame = now;
-            const config = state.fishData.fishing_config;
+            const config = state.fishData?.fishing_config || DEBUG_FISH.fishing_config;
 
             if (state.holding) state.knobPosition += config.knob_speed * dt;
             else state.knobPosition -= 1.0 * dt;
@@ -3107,31 +3339,44 @@
             els.catchModalAgain.blur()
             els.catchModalName.textContent = fish.fish_name || 'Неизвестная рыба';
             els.catchModalWeight.textContent = `${weight} кг`;
+
+            const title = document.getElementById('catch-modal-title');
+            const fishWrap = els.catchFishImg.closest('.catch-modal-fish');
+            title.classList.remove('celebrate');
+            [fishWrap, els.catchModalName, els.catchModalWeight].forEach(el => el && el.classList.remove('catch-pop'));
+            void els.catchModal.offsetWidth;
+
             els.catchModal.hidden = false;
+
+            title.classList.add('celebrate');
+            const popIn = (el, main) => {
+                if (!el) return;
+                el.classList.add('catch-pop');
+                coinSound(main);
+            };
+            schedule(() => popIn(fishWrap, true), 400);
+            schedule(() => popIn(els.catchModalName, false), 680);
+            schedule(() => popIn(els.catchModalWeight, false), 960);
         }
 
-        async function finishFishing(result, elapsedMs, message, customStatus) {
+        function finishFishing(result, elapsedMs, message, customStatus) {
             if (['caught', 'escaped', 'saving'].includes(state.phase)) return;
             clearTimers();
             stopSplashAnimation();
             els.water.classList.remove('cast', 'fake-bite', 'real-bite');
             state.holding = false;
-            state.phase = 'saving';
             const fish = state.fishData || DEBUG_FISH;
-            try {
-                if (!DEBUG_MODE) {
-                    await apiRequest('/fishing/finish', {
+            if (!DEBUG_MODE) {
+                Promise.resolve(state.sessionPromise).then(() => {
+                    if (!state.battle) return;
+                    return apiRequest('/fishing/finish', {
                         method: 'POST',
                         body: JSON.stringify({ battle_id: state.battle.id, result, elapsed_ms: elapsedMs })
                     });
-                }
-            } catch (error) {
-                console.error('[fishing] finish failed', error);
-                state.phase = 'error';
-                els.status.textContent = `Результат не сохранён: ${error.message}`;
-                els.button.hidden = false;
-                els.button.textContent = 'РЫБАЧИТЬ';
-                return;
+                }).catch(error => {
+                    console.error('[fishing] finish failed', error);
+                    showNotification(`Результат не сохранён: ${error.message}`, '#e95732', 1400);
+                });
             }
             state.phase = result;
             els.title.textContent = message;
@@ -3151,6 +3396,7 @@
                     els.slider.classList.remove('visible');
                     els.button.hidden = false;
                     els.button.textContent = 'РЫБАЧИТЬ';
+                    state.phase = 'idle';
                 }, 800);
             }
             state.phase = result;
@@ -3183,7 +3429,8 @@
 
         [els.fishImg, els.catchFishImg].forEach(img => {
             img.addEventListener('error', () => {
-                if (!img.src.endsWith('assets/0.png')) img.src = 'assets/0.png';
+                if (img.dataset.fishId) badFishAssets.add(img.dataset.fishId);
+                if (!img.src.endsWith('assets/default.png')) img.src = 'assets/default.png';
             });
         });
 
